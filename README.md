@@ -2,5 +2,5 @@
 
 ## Environments
 
-- [MyMiniGrid](./MyMiniGrid)
+- [MyMiniGrid](./RLEnvs/MyMiniGrid)
 
