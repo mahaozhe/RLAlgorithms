@@ -2,6 +2,8 @@ import gymnasium as gym
 
 from minigrid.wrappers import *
 
+from RLEnvs.MyMiniGrid.Wrappers import AgentLocation, MovetoFourDirectionsWrapper
+
 env_name = "MiniGrid-Empty-16x16-v0"
 
 # env = gym.make(env_name)  # no render
@@ -15,6 +17,10 @@ env = gym.make(env_name, render_mode="human")  # auto render, no return from env
 # env = RGBImgPartialObsWrapper(env, tile_size=8)  # use partially observable RGB image as observation
 # env = SymbolicObsWrapper(env)  # fully observable grid with symbolic state representations (not RGB image)
 # env = ViewSizeWrapper(env,agent_view_size=7)    # set the view size of the agent
+
+# + self-defined wrappers
+# env = AgentLocation(env)  # add the agent location to the `info` with the key `agent_loc`
+# env = MovetoFourDirectionsWrapper(env)  # change the action space to make the agent move to four directions directly
 
 observation, info = env.reset(seed=0)
 
