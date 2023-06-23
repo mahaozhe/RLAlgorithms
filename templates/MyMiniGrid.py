@@ -4,7 +4,7 @@ from minigrid.wrappers import *
 
 from RLEnvs.MyMiniGrid.Wrappers import AgentLocation, MovetoFourDirectionsWrapper
 
-env_name = "MiniGrid-Empty-16x16-v0"
+env_name = "MiniGrid-Empty-8x8-v0"
 
 # env = gym.make(env_name)  # no render
 env = gym.make(env_name, render_mode="human")  # auto render, no return from env.render()
