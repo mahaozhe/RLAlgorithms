@@ -17,6 +17,7 @@ main reference:
 import os
 import time
 import random
+import argparse
 
 import gymnasium as gym
 import numpy as np
@@ -101,7 +102,9 @@ class SAC:
         env = gym.make(env_id, render_mode="human") if render else gym.make(env_id)
         # * using the wrapper to record the episode information
         env = gym.wrappers.RecordEpisodeStatistics(env)
-        env.observation_space.dtype = np.float32
+        # + for the Mujoco environments, change the observation space dtype from float64 to float32
+        if not np.issubdtype(env.observation_space.dtype, np.float32):
+            env.observation_space.dtype = np.float32
 
         env.action_space.seed(self.seed)
         env.observation_space.seed(self.seed)
@@ -268,8 +271,20 @@ class Actor(nn.Module):
         return action, log_prob, mean
 
 
-if __name__ == "__main__":
-    env_id = "Pendulum-v1"
+def parse_args():
+    parser = argparse.ArgumentParser()
 
-    sac_agent = SAC(env_id=env_id, actor_class=Actor, qf_class=SoftQNetwork)
-    sac_agent.learn(total_time_steps=100000, learning_starts=500)
+    parser.add_argument("--env-id", type=str, default="Ant-v4", help="the id of the environment")
+    parser.add_argument("--total-timesteps", type=int, default=1000000, help="total timesteps of the experiments")
+    parser.add_argument("--learning-starts", type=int, default=5000, help="timestep to start learning")
+    args = parser.parse_args()
+
+    return args
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    # env_id = "Pendulum-v1"
+
+    sac_agent = SAC(env_id=args.env_id, actor_class=Actor, qf_class=SoftQNetwork)
+    sac_agent.learn(total_time_steps=args.total_timesteps, learning_starts=args.learning_starts)
