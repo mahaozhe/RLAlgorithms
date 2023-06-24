@@ -2,4 +2,5 @@ gymnasium
 numpy
 tensorboard
 torch
+tqdm
 stable_baselines3==2.0.0a5

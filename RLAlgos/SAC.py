@@ -21,6 +21,8 @@ import random
 import gymnasium as gym
 import numpy as np
 
+from tqdm import trange
+
 from stable_baselines3.common.buffers import ReplayBuffer
 
 import torch
@@ -114,7 +116,7 @@ class SAC:
         # start the game
         obs, info = self.env.reset()
 
-        for global_step in range(total_time_steps):
+        for global_step in trange(total_time_steps):
 
             # * action logic:
             if global_step < learning_starts:
@@ -127,7 +129,7 @@ class SAC:
             next_obs, reward, terminated, truncated, info = self.env.step(action)
 
             if "episode" in info.keys():
-                print(f"global_step={global_step}, episodic_return={info['episode']['r']}")
+                # print(f"global_step={global_step}, episodic_return={info['episode']['r']}")
                 self.writer.add_scalar("charts/episodic_return", info["episode"]["r"], global_step)
                 self.writer.add_scalar("charts/episodic_length", info["episode"]["l"], global_step)
 
