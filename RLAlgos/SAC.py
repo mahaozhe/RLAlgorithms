@@ -16,6 +16,7 @@ main reference:
 
 import os
 import time
+import random
 
 import gymnasium as gym
 import numpy as np
@@ -30,7 +31,6 @@ from torch.utils.tensorboard import SummaryWriter
 
 
 # TODO: set seeds
-# TODO: set tensorboard writer
 
 class SAC:
     def __init__(self, env_id, actor_class, qf_class, render=False, seed=1, replay_buffer_size=int(1e6),
@@ -39,6 +39,10 @@ class SAC:
                  policy_lr=3e-4, qf_lr=1e-3, policy_frequency=2, target_network_frequency=1, autotune=True, alpha=0.2,
                  write_frequency=100, save_folder="./runs/"):
         self.seed = seed
+
+        random.seed(seed)
+        np.random.seed(seed)
+        torch.manual_seed(seed)
 
         self.env = self.make_env(env_id, render)
         # self.env_name = env_name
@@ -190,7 +194,6 @@ class SAC:
             for param, target_param in zip(self.qf2.parameters(), self.qf2_target.parameters()):
                 target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
 
-        # TODO: to tidy up the recordings.
         if global_step % self.write_frequency == 0:
             self.writer.add_scalar("losses/qf1_values", qf1_a_values.mean().item(), global_step)
             self.writer.add_scalar("losses/qf2_values", qf2_a_values.mean().item(), global_step)
