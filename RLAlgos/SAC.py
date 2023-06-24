@@ -271,5 +271,5 @@ class Actor(nn.Module):
 if __name__ == "__main__":
     env_id = "Pendulum-v1"
 
-    sac_agent = SAC(env_id=env_id, actor_class=Actor, qf_class=SoftQNetwork,render=True)
+    sac_agent = SAC(env_id=env_id, actor_class=Actor, qf_class=SoftQNetwork)
     sac_agent.learn(total_time_steps=100000, learning_starts=500)
