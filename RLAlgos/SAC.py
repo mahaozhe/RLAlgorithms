@@ -35,11 +35,10 @@ from torch.utils.tensorboard import SummaryWriter
 # TODO: set seeds
 
 class SAC:
-    def __init__(self, env_id, actor_class, qf_class, render=False, seed=1, replay_buffer_size=int(1e6),
-                 gamma=0.99, tau=0.005,
-                 batch_size=256,
-                 policy_lr=3e-4, qf_lr=1e-3, policy_frequency=2, target_network_frequency=1, autotune=True, alpha=0.2,
-                 write_frequency=100, save_folder="./runs/"):
+    def __init__(self, env_id, actor_class, qf_class, render=False, seed=1, replay_buffer_size=int(1e6), gamma=0.99,
+                 tau=0.005, batch_size=256, policy_lr=3e-4, qf_lr=1e-3, policy_frequency=2, target_network_frequency=1,
+                 autotune=True, alpha=0.2, write_frequency=100, save_folder="./runs/"):
+
         self.seed = seed
 
         random.seed(seed)
@@ -92,11 +91,6 @@ class SAC:
         self.target_network_frequency = target_network_frequency
         self.tau = tau
 
-        self.steps = 0
-
-        # total_time_steps = None
-        # learning_starts = None
-
         # * for the tensorboard writer
         run_name = "{}-{}-{}".format(env_id, seed, int(time.time()))
         os.makedirs(save_folder, exist_ok=True)
@@ -107,6 +101,7 @@ class SAC:
         env = gym.make(env_id, render_mode="human") if render else gym.make(env_id)
         # * using the wrapper to record the episode information
         env = gym.wrappers.RecordEpisodeStatistics(env)
+        env.observation_space.dtype = np.float32
 
         env.action_space.seed(self.seed)
         env.observation_space.seed(self.seed)
@@ -123,7 +118,8 @@ class SAC:
                 action = self.env.action_space.sample()
             else:
                 action, _, _ = self.actor.get_action(torch.Tensor(obs).to(self.device))
-                action = action.detach().cpu().numpy()
+                # ! the output of the network has an additional dimension, need the reshape(-1)
+                action = action.detach().cpu().numpy().reshape(-1)
 
             # execute the action
             next_obs, reward, terminated, truncated, info = self.env.step(action)
@@ -212,12 +208,10 @@ class SAC:
         self.writer.close()
 
 
-# ALGO LOGIC: initialize agent here:
 class SoftQNetwork(nn.Module):
     def __init__(self, env):
         super().__init__()
-        self.fc1 = nn.Linear(
-            np.array(env.observation_space.shape).prod() + np.prod(env.action_space.shape), 256)
+        self.fc1 = nn.Linear(np.array(env.observation_space.shape).prod() + np.prod(env.action_space.shape), 256)
         self.fc2 = nn.Linear(256, 256)
         self.fc3 = nn.Linear(256, 1)
 
@@ -241,14 +235,15 @@ class Actor(nn.Module):
         self.fc_mean = nn.Linear(256, np.prod(env.action_space.shape))
         self.fc_logstd = nn.Linear(256, np.prod(env.action_space.shape))
         # action rescaling
-        self.register_buffer(
-            "action_scale", torch.tensor((env.action_space.high - env.action_space.low) / 2.0, dtype=torch.float32)
-        )
-        self.register_buffer(
-            "action_bias", torch.tensor((env.action_space.high + env.action_space.low) / 2.0, dtype=torch.float32)
-        )
+        self.register_buffer("action_scale",
+                             torch.tensor((env.action_space.high - env.action_space.low) / 2.0, dtype=torch.float32))
+        self.register_buffer("action_bias",
+                             torch.tensor((env.action_space.high + env.action_space.low) / 2.0, dtype=torch.float32))
 
     def forward(self, x):
+        # ! need to check whether the input `x` is only one-dimensional
+        x = x.unsqueeze(0) if x.dim() == 1 else x
+
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         mean = self.fc_mean(x)
@@ -268,13 +263,13 @@ class Actor(nn.Module):
         log_prob = normal.log_prob(x_t)
         # Enforcing Action Bound
         log_prob -= torch.log(self.action_scale * (1 - y_t.pow(2)) + 1e-6)
-        log_prob = log_prob.sum(0, keepdim=True)
+        log_prob = log_prob.sum(1, keepdim=True)
         mean = torch.tanh(mean) * self.action_scale + self.action_bias
         return action, log_prob, mean
 
 
 if __name__ == "__main__":
-    env_id = "MountainCarContinuous-v0"
+    env_id = "Pendulum-v1"
 
-    sac_agent = SAC(env_id=env_id, actor_class=Actor, qf_class=SoftQNetwork)
+    sac_agent = SAC(env_id=env_id, actor_class=Actor, qf_class=SoftQNetwork,render=True)
     sac_agent.learn(total_time_steps=100000, learning_starts=500)
