@@ -12,27 +12,9 @@ there are mainly three kinds of observations:
 * RGB image: `(tile_size*width, tile_size*height, 3)`
 * A 3 dimensional tuple `(OBJECT_IDX, COLOR_IDX, STATE)`
     ```python
+    OBJECT_TO_IDX = {"unseen": 0, "empty": 1, "wall": 2, "floor": 3, "door": 4, "key": 5, "ball": 6, "box": 7, "goal": 8, "lava": 9, "agent": 10}
     COLOR_TO_IDX = {"red": 0, "green": 1, "blue": 2, "purple": 3, "yellow": 4, "grey": 5}
-    
-    OBJECT_TO_IDX = {
-        "unseen": 0,
-        "empty": 1,
-        "wall": 2,
-        "floor": 3,
-        "door": 4,
-        "key": 5,
-        "ball": 6,
-        "box": 7,
-        "goal": 8,
-        "lava": 9,
-        "agent": 10,
-    }
-    
-    STATE_TO_IDX = {
-        "open": 0,
-        "closed": 1,
-        "locked": 2,
-    }
+    STATE_TO_IDX = {"open": 0, "closed": 1, "locked": 2}
     ```
 * Symbolic state representation: a triple of `(X, Y, IDX)`, where `X` and `Y` are the coordinates on the grid, and `IDX` is the id of the object.
 
@@ -64,3 +46,11 @@ from minigrid.wrappers import *
 - `RGBImgPartialObsWrapper(env, tile_size=8)`: use partially observable RGB image as observation
 - `SymbolicObsWrapper(env)`: fully observable grid with a symbolic state representation
 - `ViewSizeWrapper(env,agent_view_size=7)`: set the view size of the agent
+
+### Self-Defined Wrappers
+
+```python
+from RLEnvs.MyMiniGrid.Wrappers import *
+```
+
+- `AgentLocation`
