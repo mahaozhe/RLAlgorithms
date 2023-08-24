@@ -25,7 +25,8 @@ class AgentLocation(gym.core.Wrapper):
 
 class MovetoFourDirectionsWrapper(gym.core.Wrapper):
     """
-    A wrapper to map from the original first three actions to four new actions:
+    The wrapper to modify the action space to `Discrete(4)`,
+    making the agent only moves to four directions for one step:
 
     original actions:
     * 0 - turn left
