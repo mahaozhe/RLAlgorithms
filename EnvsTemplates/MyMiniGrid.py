@@ -1,10 +1,15 @@
 import gymnasium as gym
 
+import RLEnvs.MyMiniGrid.MyMiniGridEnvs
+
 from minigrid.wrappers import *
 
 from RLEnvs.MyMiniGrid.Wrappers import AgentLocation, MovetoFourDirectionsWrapper
 
+# + use MiniGrid environments
 env_name = "MiniGrid-Empty-8x8-v0"
+# + or use self-defined environments
+# env_name = "MiniGrid-Env-Four-Room"
 
 env = gym.make(env_name)  # no render
 # env = gym.make(env_name, render_mode="human")  # auto render, no return from env.render()
