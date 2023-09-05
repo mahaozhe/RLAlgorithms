@@ -114,3 +114,42 @@ class MovetoFourDirectionsWrapper(gym.core.Wrapper):
 
             self.unwrapped.step_count -= 2
             return o, rewards, te, tr, i
+
+
+class AutoPickUpKeyOpenDoor(gym.core.Wrapper):
+    """
+    The wrapper to make the agent to automatically pick up the key once it steps on it.
+    Once the agent picks up the key, the door will be set to open for it to pass through.
+    """
+
+    def __init__(self, env):
+        super(AutoPickUpKeyOpenDoor, self).__init__(env)
+
+        self.key_num = len(env.unwrapped.key_locs)
+        self.key_picked = [False] * self.key_num
+
+    def reset(self, **kwargs):
+        obs = self.env.reset()
+        self.key_picked = [False] * self.key_num
+
+        return obs
+
+    def step(self, action):
+        obs, reward, terminated, truncated, info = self.env.step(action)
+
+        env = self.unwrapped
+
+        agent_loc = env.agent_pos
+
+        # get the key and the door locations
+        key_locs = env.key_locs
+        door_locs = env.door_locs
+
+        # check if the agent steps on the key, if so, auto-pick up the key, and open the door
+        for i in range(self.key_num):
+            if not self.key_picked[i] and agent_loc == key_locs[i]:
+                self.key_picked[i] = True
+                self.grid.set(key_locs[i][0], key_locs[i][1], None)
+                door_obj = env.grid.get(door_locs[i][0], door_locs[i][1])
+                door_obj.is_locked = False
+                door_obj.is_open = True
