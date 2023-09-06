@@ -7,7 +7,8 @@
 All RL environments packages can be found in [RLEnvs](./RLEnvs/) package.
 
 - [MyMiniGrid](./RLEnvs/MyMiniGrid)
-- [ ] Panda Robot
+- [Panda Robot](./RLEnvs/MyPandaRobot)
+- [gymnasium](./RLEnvs/gymnasium)
 
 ### Templates
 
