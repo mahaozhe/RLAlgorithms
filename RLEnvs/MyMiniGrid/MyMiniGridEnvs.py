@@ -2,7 +2,7 @@
 The self-defined MiniGrid environments.
 """
 
-from gymnasium import register
+from gymnasium.envs.registration import register
 
 from minigrid.minigrid_env import MiniGridEnv
 from minigrid.core.grid import Grid
