@@ -1,0 +1,6 @@
+gymnasium
+gymnasium[classic-control]
+gymnasium[box2d]
+gymnasium[toy-text]
+gymnasium[mujoco]
+gymnasium[atari]
