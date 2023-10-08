@@ -33,9 +33,10 @@ class DQN:
     The DQN base algorithm.
     """
 
-    def __init__(self, env_id, q_network_class, exp_name="test", render=False, seed=1, cuda=0, learning_rate=2.5e-4,
-                 buffer_size=10000, gamma=0.99, tau=1., target_network_frequency=500, batch_size=128, start_e=1,
-                 end_e=0.05, exploration_fraction=0.5, train_frequency=10, write_frequency=100):
+    def __init__(self, env_id, q_network_class, exp_name="test", render=False, seed=1, cuda=0,
+                 learning_rate=2.5e-4, buffer_size=10000, gamma=0.99, tau=1., target_network_frequency=500,
+                 batch_size=128, start_e=1, end_e=0.05, exploration_fraction=0.5, train_frequency=10,
+                 write_frequency=100, save_folder="./dqn/"):
         """
         Initialize the DQN algorithm.
         :param env_id: the environment id
@@ -58,6 +59,8 @@ class DQN:
         :param save_folder: the folder to save the model
         """
 
+        self.exp_name = exp_name
+
         self.seed = seed
 
         # set the random seeds
@@ -68,13 +71,15 @@ class DQN:
 
         self.device = torch.device("cuda:{}".format(cuda) if torch.cuda.is_available() else "cpu")
 
-        self.env = self.make_env(env_id, seed)
+        self.env = self.make_env(env_id, seed, render)
 
+        # the networks
         self.q_network = q_network_class(self.env).to(self.device)
         self.optimizer = optim.Adam(self.q_network.parameters(), lr=learning_rate)
         self.target_network = q_network_class(self.env).to(self.device)
         self.target_network.load_state_dict(self.q_network.state_dict())
 
+        # the replay buffer
         self.replay_buffer = ReplayBuffer(
             buffer_size,
             self.env.observation_space,
@@ -86,32 +91,38 @@ class DQN:
 
         self.gamma = gamma
 
+        # for the epsilon greedy exploration
         self.start_e = start_e
         self.end_e = end_e
         self.exploration_fraction = exploration_fraction
 
+        # for the batch training
         self.batch_size = batch_size
+
+        # for the target network update
         self.target_network_frequency = target_network_frequency
         self.tau = tau
+
+        # for the training
         self.train_frequency = train_frequency
 
-        # * for the tensorboard writer, skip the test experiment
-        if exp_name != "test":
-            run_name = "{}-DQN-{}-{}".format(exp_name, seed,
-                                             datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d-%H:%M:%S'))
-            os.makedirs("./runs/", exist_ok=True)
-            self.writer = SummaryWriter(os.path.join("./runs/", run_name))
-
+        # * for the tensorboard writer
+        run_name = "{}-DQN-{}-{}".format(exp_name, seed,
+                                         datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d-%H:%M:%S'))
+        os.makedirs("./runs/", exist_ok=True)
+        self.writer = SummaryWriter(os.path.join("./runs/", run_name))
         self.write_frequency = write_frequency
 
-    def make_env(self, env_id, seed):
+        self.save_folder = save_folder
+
+    def make_env(self, env_id, seed, render):
         """
         Make the environment.
         :param env_id: the environment id
         :param seed: the random seed
         :return: the environment
         """
-        env = gym.make(env_id)
+        env = gym.make(env_id) if not render else gym.make(env_id, render_mode="human")
 
         assert isinstance(env.action_space, gym.spaces.Discrete), "only discrete action space is supported for DQN"
 
@@ -119,6 +130,7 @@ class DQN:
         env.action_space.seed(seed)
         env.observation_space.seed(seed)
 
+        # to automatically record the episodic return
         env = gym.wrappers.RecordEpisodeStatistics(env)
 
         return env
@@ -148,7 +160,7 @@ class DQN:
 
             next_obs, reward, terminated, truncated, info = self.env.step(action)
 
-            # TODO: to check whether we need `trunated` or not
+            # TODO: to check whether we need `truncated` or not
 
             if "episode" in info:
                 print(f"global_step={global_step}, episodic_return={info['episode']['r']}")
@@ -162,43 +174,50 @@ class DQN:
 
             if global_step > learning_starts:
                 if global_step % self.train_frequency == 0:
-                    data = self.replay_buffer.sample(self.batch_size)
-                    with torch.no_grad():
-                        target_max, _ = self.target_network(data.next_observations).max(dim=1)
-                        td_target = data.rewards.flatten() + self.gamma * target_max * (1 - data.dones.flatten())
-                    old_val = self.q_network(data.observations).gather(1, data.actions).squeeze()
-                    loss = F.mse_loss(td_target, old_val)
-
-                    if global_step % self.write_frequency == 0:
-                        self.writer.add_scalar("losses/td_loss", loss, global_step)
-                        self.writer.add_scalar("losses/q_values", old_val.mean().item(), global_step)
-
-                    # * update q network
-                    self.optimizer.zero_grad()
-                    loss.backward()
-                    self.optimizer.step()
-
-                # * update target network
-                if global_step % self.target_network_frequency == 0:
-                    for target_network_param, q_network_param in zip(self.target_network.parameters(),
-                                                                     self.q_network.parameters()):
-                        target_network_param.data.copy_(
-                            self.tau * q_network_param.data + (1.0 - self.tau) * target_network_param.data)
+                    self.optimize(global_step)
 
         self.save(indicator="final")
         self.env.close()
         self.writer.close()
 
+    def optimize(self, global_step):
+        data = self.replay_buffer.sample(self.batch_size)
+        with torch.no_grad():
+            target_max, _ = self.target_network(data.next_observations).max(dim=1)
+            td_target = data.rewards.flatten() + self.gamma * target_max * (1 - data.dones.flatten())
+        old_val = self.q_network(data.observations).gather(1, data.actions).squeeze()
+        loss = F.mse_loss(td_target, old_val)
+
+        if global_step % self.write_frequency == 0:
+            self.writer.add_scalar("losses/td_loss", loss, global_step)
+            self.writer.add_scalar("losses/q_values", old_val.mean().item(), global_step)
+
+        # * update q network
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+
+        # * update target network
+        if global_step % self.target_network_frequency == 0:
+            for target_network_param, q_network_param in zip(self.target_network.parameters(),
+                                                             self.q_network.parameters()):
+                target_network_param.data.copy_(
+                    self.tau * q_network_param.data + (1.0 - self.tau) * target_network_param.data)
+
     def save(self, indicator="best"):
 
-        os.makedirs("./saved_agents/", exist_ok=True)
+        os.makedirs(self.save_folder, exist_ok=True)
 
         if indicator.startswith("best") or indicator.startswith("final"):
             torch.save(self.target_network.state_dict(),
-                       "./saved_agents/q_network-{}-{}-{}.pth".format(self.exp_name, indicator, self.seed))
+                       os.path.join(self.save_folder,
+                                    "q_network-{}-{}-{}.pth".format(self.exp_name, indicator, self.seed)))
         else:
             torch.save(self.target_network.state_dict(),
-                       "./saved_agents/q_network-{}-{}-{}-{}.pth".format(self.exp_name, indicator, self.seed,
-                                                                         datetime.datetime.fromtimestamp(
-                                                                             time.time()).strftime(
-                                                                             '%Y-%m-%d-%H-%M-%S')))
+                       os.path.join(self.save_folder,
+                                    "./saved_agents/q_network-{}-{}-{}-{}.pth".format(self.exp_name,
+                                                                                      indicator,
+                                                                                      self.seed,
+                                                                                      datetime.datetime.fromtimestamp(
+                                                                                          time.time()).strftime(
+                                                                                          '%Y-%m-%d-%H-%M-%S'))))
