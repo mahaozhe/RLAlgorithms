@@ -4,8 +4,6 @@ The script to run DQN on classic control environments.
 
 import argparse
 
-import gymnasium as gym
-
 from RLAlgos.DQN import DQN
 
 from Networks.QNetworks import QNetClassicControl
@@ -75,3 +73,7 @@ def run():
     agent.learn(total_timesteps=args.total_timesteps, learning_starts=args.learning_starts)
 
     agent.save(indicator="final")
+
+
+if __name__ == "__main__":
+    run()

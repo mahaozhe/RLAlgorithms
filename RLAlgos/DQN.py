@@ -33,7 +33,7 @@ class DQN:
     The DQN base algorithm.
     """
 
-    def __init__(self, env_id, q_network_class, exp_name="test", render=False, seed=1, cuda=0,
+    def __init__(self, env_id, q_network_class, exp_name="dqn", render=False, seed=1, cuda=0,
                  learning_rate=2.5e-4, buffer_size=10000, rb_optimize_memory=False, gamma=0.99, tau=1.,
                  target_network_frequency=500, batch_size=128, start_e=1, end_e=0.05, exploration_fraction=0.5,
                  train_frequency=10, write_frequency=100, save_folder="./dqn/"):
@@ -108,13 +108,14 @@ class DQN:
         self.train_frequency = train_frequency
 
         # * for the tensorboard writer
-        run_name = "{}-DQN-{}-{}".format(exp_name, seed,
-                                         datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d-%H:%M:%S'))
+        run_name = "{}-{}-{}".format(exp_name, seed,
+                                     datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d-%H:%M:%S'))
         os.makedirs("./runs/", exist_ok=True)
         self.writer = SummaryWriter(os.path.join("./runs/", run_name))
         self.write_frequency = write_frequency
 
         self.save_folder = save_folder
+        os.makedirs(self.save_folder, exist_ok=True)
 
     def make_env(self, env_id, seed, render):
         """
@@ -206,9 +207,6 @@ class DQN:
                     self.tau * q_network_param.data + (1.0 - self.tau) * target_network_param.data)
 
     def save(self, indicator="best"):
-
-        os.makedirs(self.save_folder, exist_ok=True)
-
         if indicator.startswith("best") or indicator.startswith("final"):
             torch.save(self.target_network.state_dict(),
                        os.path.join(self.save_folder,
@@ -216,12 +214,12 @@ class DQN:
         else:
             torch.save(self.target_network.state_dict(),
                        os.path.join(self.save_folder,
-                                    "./saved_agents/q_network-{}-{}-{}-{}.pth".format(self.exp_name,
-                                                                                      indicator,
-                                                                                      self.seed,
-                                                                                      datetime.datetime.fromtimestamp(
-                                                                                          time.time()).strftime(
-                                                                                          '%Y-%m-%d-%H-%M-%S'))))
+                                    "/q_network-{}-{}-{}-{}.pth".format(self.exp_name,
+                                                                        indicator,
+                                                                        self.seed,
+                                                                        datetime.datetime.fromtimestamp(
+                                                                            time.time()).strftime(
+                                                                            '%Y-%m-%d-%H-%M-%S'))))
 
 
 class DQN_Atari(DQN):
@@ -229,7 +227,7 @@ class DQN_Atari(DQN):
     The class for DQN with Atari environments.
     """
 
-    def __init__(self, env_id, q_network_class, exp_name="test", render=False, seed=1, cuda=0,
+    def __init__(self, env_id, q_network_class, exp_name="dqn-atari", render=False, seed=1, cuda=0,
                  learning_rate=1e-4, buffer_size=1000000, rb_optimize_memory=True, gamma=0.99, tau=1.,
                  target_network_frequency=1000, batch_size=32, start_e=1, end_e=0.01, exploration_fraction=0.1,
                  train_frequency=4, write_frequency=100, save_folder="./dqn-atari/"):
@@ -263,6 +261,8 @@ class DQN_Atari(DQN):
     def make_env(self, env_id, seed, render):
         env = gym.make(env_id) if not render else gym.make(env_id, render_mode="human")
 
+        assert isinstance(env.action_space, gym.spaces.Discrete), "only discrete action space is supported for DQN"
+
         # TODO: check whether the seed is set
         env.action_space.seed(seed)
         env.observation_space.seed(seed)
@@ -275,4 +275,3 @@ class DQN_Atari(DQN):
         env = gym.wrappers.RecordEpisodeStatistics(env)
 
         return env
-

@@ -1,7 +1,8 @@
 """
 The scrit to define some Q-Networks.
 
-The input is the observation, while the output is the Q value for each action.
+The input is usually the observation.
+The output is usually the Q value for each action.
 """
 
 import numpy as np
