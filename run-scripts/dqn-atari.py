@@ -16,7 +16,7 @@ def parse_args():
 
     parser.add_argument("--exp-name", type=str, default="dqn-atari")
 
-    parser.add_argument("--env-id", type=str, default="ALE/MsPacman-v5")
+    parser.add_argument("--env-id", type=str, default="ALE/Breakout-v5")
     parser.add_argument("--render", type=bool, default=False)
 
     parser.add_argument("--seed", type=int, default=1)

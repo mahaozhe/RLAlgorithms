@@ -4,7 +4,7 @@ The Deep Q Network (DQN) algorithm.
 * Do not support the vectorized environment.
 
 references:
-- cleanrl: https://github.com/vwxyzjn/cleanrl/tree/master
+- cleanrl: https://docs.cleanrl.dev/rl-algorithms/dqn/
 - original paper: https://www.nature.com/articles/nature14236
 
 ! Note: the code is completed with the help of copilot.
