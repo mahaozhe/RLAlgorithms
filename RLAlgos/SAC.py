@@ -39,7 +39,7 @@ class SAC:
 
     def __init__(self, env_id, actor_class, critic_class, exp_name="sac", render=False, seed=1, cuda=0, gamma=0.99,
                  buffer_size=1000000, rb_optimize_memory=False, batch_size=256, policy_lr=3e-4, q_lr=1e-3,
-                 alpha_lr=1e-4, tau=0.005, policy_frequency=2, target_network_frequency=1, noise_clip=0.5, alpha=0.2,
+                 alpha_lr=1e-4, target_network_frequency=1, tau=0.005, policy_frequency=2, noise_clip=0.5, alpha=0.2,
                  alpha_autotune=True, write_frequency=100, save_folder="./sac/"):
         """
         Initialize the SAC algorithm.
@@ -287,7 +287,7 @@ class SAC_Atari(SAC):
 
     def __init__(self, env_id, actor_class, critic_class, exp_name="sac", render=False, seed=1, cuda=0, gamma=0.99,
                  buffer_size=1000000, rb_optimize_memory=False, batch_size=256, policy_lr=3e-4, q_lr=3e-4,
-                 alpha_lr=1e-4, tau=1, policy_frequency=4, target_network_frequency=8000, noise_clip=0.5, alpha=0.2,
+                 alpha_lr=1e-4, target_network_frequency=8000, tau=1, policy_frequency=4, noise_clip=0.5, alpha=0.2,
                  alpha_autotune=True, write_frequency=100, save_folder="./sac/"):
         """
         Initialize the SAC algorithm.
@@ -315,9 +315,9 @@ class SAC_Atari(SAC):
         :param save_folder: the folder to save the model
         """
         super(SAC_Atari, self).__init__(env_id, actor_class, critic_class, exp_name, render, seed, cuda, gamma,
-                                        buffer_size, rb_optimize_memory, batch_size, policy_lr, q_lr, alpha_lr, tau,
-                                        policy_frequency, target_network_frequency, noise_clip, alpha, alpha_autotune,
-                                        write_frequency, save_folder)
+                                        buffer_size, rb_optimize_memory, batch_size, policy_lr, q_lr, alpha_lr,
+                                        target_network_frequency, tau, policy_frequency, noise_clip, alpha,
+                                        alpha_autotune, write_frequency, save_folder)
 
     def make_env(self, env_id, seed, render):
         env = gym.make(env_id) if not render else gym.make(env_id, render_mode="human")
