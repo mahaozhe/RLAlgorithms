@@ -1,0 +1,56 @@
+"""
+The scrit to define some Q-Networks.
+
+The input is the observation, while the output is the Q value for each action.
+"""
+
+import numpy as np
+
+import torch.nn as nn
+
+
+class QNetClassicControl(nn.Module):
+    """
+    The Q network for classic control environments.
+    The observation space is usually a vector.
+    The action space is a discrete vector.
+    """
+
+    def __init__(self, env):
+        super().__init__()
+        self.network = nn.Sequential(
+            nn.Linear(np.array(env.observation_space.shape).prod(), 120),
+            nn.ReLU(),
+            nn.Linear(120, 84),
+            nn.ReLU(),
+            nn.Linear(84, env.action_space.n),
+        )
+
+    def forward(self, x):
+        return self.network(x)
+
+
+class QNetAtari(nn.Module):
+    """
+    The Q network for Atari environments.
+    The observation space is usually an image.
+    The action space is a discrete vector.
+    """
+
+    def __init__(self, env):
+        super().__init__()
+        self.network = nn.Sequential(
+            nn.Conv2d(4, 32, 8, 4),
+            nn.ReLU(),
+            nn.Conv2d(32, 64, 4, 2),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, 3, 1),
+            nn.ReLU(),
+            nn.Flatten(),
+            nn.Linear(3136, 512),
+            nn.ReLU(),
+            nn.Linear(512, env.action_space.n),
+        )
+
+    def forward(self, x):
+        return self.network(x / 255.0)
