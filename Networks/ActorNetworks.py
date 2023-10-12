@@ -10,6 +10,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.distributions.categorical import Categorical
 
 
 class SACActor(nn.Module):
@@ -50,3 +51,45 @@ class SACActor(nn.Module):
         log_prob = log_prob.sum(1, keepdim=True)
         mean = torch.tanh(mean) * self.action_scale + self.action_bias
         return action, log_prob, mean
+
+
+class SACActorAtari(nn.Module):
+    def __init__(self, env):
+        super().__init__()
+        obs_shape = env.observation_space.shape
+
+        def layer_init(layer, bias_const=0.0):
+            nn.init.kaiming_normal_(layer.weight)
+            torch.nn.init.constant_(layer.bias, bias_const)
+            return layer
+
+        self.conv = nn.Sequential(
+            layer_init(nn.Conv2d(obs_shape[0], 32, kernel_size=8, stride=4)),
+            nn.ReLU(),
+            layer_init(nn.Conv2d(32, 64, kernel_size=4, stride=2)),
+            nn.ReLU(),
+            layer_init(nn.Conv2d(64, 64, kernel_size=3, stride=1)),
+            nn.Flatten(),
+        )
+
+        with torch.inference_mode():
+            output_dim = self.conv(torch.zeros(1, *obs_shape)).shape[1]
+
+        self.fc1 = layer_init(nn.Linear(output_dim, 512))
+        self.fc_logits = layer_init(nn.Linear(512, env.action_space.n))
+
+    def forward(self, x):
+        x = F.relu(self.conv(x))
+        x = F.relu(self.fc1(x))
+        logits = self.fc_logits(x)
+
+        return logits
+
+    def get_action(self, x):
+        logits = self(x / 255.0)
+        policy_dist = Categorical(logits=logits)
+        action = policy_dist.sample()
+        # Action probabilities for calculating the adapted soft-Q loss
+        action_probs = policy_dist.probs
+        log_prob = F.log_softmax(logits, dim=1)
+        return action, log_prob, action_probs
