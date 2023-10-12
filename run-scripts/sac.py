@@ -33,9 +33,7 @@ def parse_args():
     parser.add_argument("--target-network-frequency", type=int, default=1)
     parser.add_argument("--tau", type=float, default=0.005)
 
-    parser.add_argument("--policy-frequency", type=int, default=12)
-
-    parser.add_argument("--noise-clip", type=float, default=0.5)
+    parser.add_argument("--policy-frequency", type=int, default=2)
 
     parser.add_argument("--alpha", type=float, default=0.2)
     parser.add_argument("--alpha-autotune", type=bool, default=True)
@@ -71,7 +69,6 @@ def run():
         target_network_frequency=args.target_network_frequency,
         tau=args.tau,
         policy_frequency=args.policy_frequency,
-        noise_clip=args.noise_clip,
         alpha=args.alpha,
         alpha_autotune=args.alpha_autotune,
         write_frequency=args.write_frequency,
