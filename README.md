@@ -32,3 +32,4 @@ All RL environments packages can be found in [RLEnvs](./RLEnvs/) package.
     * [DQN in Atari games](./run-scripts/dqn-atari.py)
 - SAC algorithm:
     * [SAC in classic control](./run-scripts/sac.py)
+    * [SAC in Atari games](./run-scripts/sac-atari.py)
