@@ -12,7 +12,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class SACSoftQNetwork(nn.Module):
+class QNetworkClassicControl(nn.Module):
     def __init__(self, env):
         super().__init__()
         self.fc1 = nn.Linear(np.array(env.observation_space.shape).prod() + np.prod(env.action_space.shape), 256)
@@ -25,3 +25,4 @@ class SACSoftQNetwork(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
+
