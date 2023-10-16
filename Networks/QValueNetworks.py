@@ -12,7 +12,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class QNetworkClassicControl(nn.Module):
+class QNetworkContinuousControl(nn.Module):
     def __init__(self, env):
         super().__init__()
         self.fc1 = nn.Linear(np.array(env.observation_space.shape).prod() + np.prod(env.action_space.shape), 256)

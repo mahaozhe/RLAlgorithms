@@ -7,7 +7,7 @@ import argparse
 from RLAlgos.SAC import SAC
 
 from Networks.ActorNetworks import SACActor
-from Networks.QValueNetworks import QNetworkClassicControl
+from Networks.QValueNetworks import QNetworkContinuousControl
 
 
 def parse_args():

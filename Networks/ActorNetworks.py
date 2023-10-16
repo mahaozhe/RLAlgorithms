@@ -95,7 +95,7 @@ class SACActorAtari(nn.Module):
         return action, log_prob, action_probs
 
 
-class DeterministicActorClassicControl(nn.Module):
+class DeterministicActorContinuousControl(nn.Module):
     def __init__(self, env):
         super().__init__()
         self.fc1 = nn.Linear(np.array(env.observation_space.shape).prod(), 256)

@@ -6,8 +6,8 @@ import argparse
 
 from RLAlgos.DDPG import DDPG
 
-from Networks.ActorNetworks import DeterministicActorClassicControl
-from Networks.QValueNetworks import QNetworkClassicControl
+from Networks.ActorNetworks import DeterministicActorContinuousControl
+from Networks.QValueNetworks import QNetworkContinuousControl
 
 
 def parse_args():

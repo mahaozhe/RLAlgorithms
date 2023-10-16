@@ -18,7 +18,7 @@ All RL environments packages can be found in [RLEnvs](./RLEnvs/) package.
 
 - [x] [DQN](./RLAlgos/DQN.py)
 - [ ] C51
-- [ ] DDPG
+- [x] [DDPG](./RLAlgos/DDPG.py)
 - [ ] TD3
 - [x] [SAC](./RLAlgos/SAC.py)
 - [ ] TRPO?
@@ -27,9 +27,11 @@ All RL environments packages can be found in [RLEnvs](./RLEnvs/) package.
 
 ### Running Scripts
 
-- DQN algorithm:
+- DQN algorithm (can only work on discrete action spaces):
     * [DQN in classic control](./run-scripts/dqn.py)
     * [DQN in Atari games](./run-scripts/dqn-atari.py)
 - SAC algorithm:
-    * [SAC in classic control](./run-scripts/sac.py)
+    * [SAC in continuous control](./run-scripts/sac.py)
     * [SAC in Atari games](./run-scripts/sac-atari.py)
+- DDPG algorithm (can only work on continuous action spaces):
+    * [DDPG in continuous control](./run-scripts/ddpg.py)
