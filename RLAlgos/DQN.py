@@ -5,7 +5,11 @@ The Deep Q Network (DQN) algorithm.
 
 references:
 - cleanrl: https://docs.cleanrl.dev/rl-algorithms/dqn/
-- original paper: https://www.nature.com/articles/nature14236
+- cleanrl codes (dqn): https://github.com/vwxyzjn/cleanrl/blob/master/cleanrl/dqn.py
+- cleanrl codes (dqn atari): https://github.com/vwxyzjn/cleanrl/blob/master/cleanrl/dqn_atari.py
+- original papers:
+    * https://www.nature.com/articles/nature14236
+    * https://arxiv.org/pdf/1312.5602.pdf
 
 ! Note: the code is completed with the help of copilot.
 """
@@ -172,7 +176,10 @@ class DQN:
 
             self.replay_buffer.add(obs, next_obs, action, reward, terminated, info)
 
-            obs = next_obs
+            if not terminated:
+                obs = next_obs
+            else:
+                obs, _ = self.env.reset()
 
             if global_step > learning_starts:
                 if global_step % self.train_frequency == 0:
