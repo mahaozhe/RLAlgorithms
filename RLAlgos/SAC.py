@@ -7,6 +7,8 @@ The Soft Actor-Critic (SAC) algorithm.
 
 references:
 - cleanrl: https://docs.cleanrl.dev/rl-algorithms/sac/
+- cleanrl codes (sac continuous): https://github.com/vwxyzjn/cleanrl/blob/master/cleanrl/sac_continuous_action.py
+- cleanrl codes (sac atari): https://github.com/vwxyzjn/cleanrl/blob/master/cleanrl/sac_atari.py
 - original papers:
     * https://arxiv.org/abs/1801.01290
     * https://arxiv.org/abs/1812.05905
@@ -155,7 +157,7 @@ class SAC:
 
     def learn(self, total_timesteps=1000000, learning_starts=5000):
 
-        obs = self.env.reset()
+        obs, _ = self.env.reset()
 
         for global_step in range(total_timesteps):
             if global_step < learning_starts:
@@ -173,7 +175,10 @@ class SAC:
 
             self.replay_buffer.add(obs, next_obs, action, reward, terminated, info)
 
-            obs = next_obs
+            if not terminated:
+                obs = next_obs
+            else:
+                obs, _ = self.env.reset()
 
             # ALGO LOGIC: training.
             if global_step > learning_starts:
@@ -283,9 +288,9 @@ class SAC_Atari(SAC):
     TODO: to complete.
     """
 
-    def __init__(self, env_id, actor_class, critic_class, exp_name="sac", render=False, seed=1, cuda=0, gamma=0.99,
-                 buffer_size=1000000, rb_optimize_memory=False, batch_size=256, policy_lr=3e-4, q_lr=3e-4, eps=1e-4,
-                 alpha_lr=1e-4, target_network_frequency=8000, tau=1, policy_frequency=4, alpha=0.2,
+    def __init__(self, env_id, actor_class, critic_class, exp_name="sac-atari", render=False, seed=1, cuda=0,
+                 gamma=0.99, buffer_size=1000000, rb_optimize_memory=False, batch_size=256, policy_lr=3e-4, q_lr=3e-4,
+                 eps=1e-4, alpha_lr=1e-4, target_network_frequency=8000, tau=1, policy_frequency=4, alpha=0.2,
                  alpha_autotune=True, target_entropy_scale=0.89, write_frequency=100, save_folder="./sac/"):
         """
         Initialize the SAC algorithm.
@@ -386,7 +391,7 @@ class SAC_Atari(SAC):
             if self.alpha_autotune:
                 # re-use action probabilities for temperature loss
                 alpha_loss = (action_probs.detach() * (
-                            -self.log_alpha.exp() * (log_pi + self.target_entropy).detach())).mean()
+                        -self.log_alpha.exp() * (log_pi + self.target_entropy).detach())).mean()
 
                 self.alpha_optimizer.zero_grad()
                 alpha_loss.backward()

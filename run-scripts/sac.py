@@ -7,7 +7,7 @@ import argparse
 from RLAlgos.SAC import SAC
 
 from Networks.ActorNetworks import SACActor
-from Networks.QValueNetworks import SACSoftQNetwork
+from Networks.QValueNetworks import QNetworkClassicControl
 
 
 def parse_args():
@@ -54,7 +54,7 @@ def run():
     agent = SAC(
         env_id=args.env_id,
         actor_class=SACActor,
-        critic_class=SACSoftQNetwork,
+        critic_class=QNetworkClassicControl,
         exp_name=args.exp_name,
         render=args.render,
         seed=args.seed,
