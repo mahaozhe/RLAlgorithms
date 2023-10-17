@@ -19,7 +19,7 @@ All RL environments packages can be found in [RLEnvs](./RLEnvs/) package.
 - [x] [DQN](./RLAlgos/DQN.py)
 - [ ] C51
 - [x] [DDPG](./RLAlgos/DDPG.py)
-- [x] TD3
+- [x] [TD3](./RLAlgos/TD3.py)
 - [x] [SAC](./RLAlgos/SAC.py)
 - [ ] TRPO?
 - [ ] PPO
