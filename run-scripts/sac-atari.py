@@ -1,5 +1,5 @@
 """
-The script to SAC on Atari environments.
+The script to run SAC on Atari environments.
 """
 
 import argparse

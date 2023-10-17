@@ -1,5 +1,5 @@
 """
-The script to SAC on classic control environments.
+The script to run SAC on classic control environments.
 """
 
 import argparse
