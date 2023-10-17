@@ -40,7 +40,7 @@ class DDPG:
 
     def __init__(self, env_id, actor_class, critic_class, exp_name="ddpg", render=False, seed=1, cuda=0, gamma=0.99,
                  buffer_size=1000000, rb_optimize_memory=False, exploration_noise=0.1, actor_lr=3e-4, critic_lr=3e-4,
-                 batch_size=256, tau=0.005, policy_frequency=2, write_frequency=100, save_folder="./ddpg/"):
+                 batch_size=256, policy_frequency=2, tau=0.005, write_frequency=100, save_folder="./ddpg/"):
         """
         Initialize the DDPG algorithm.
         :param env_id: the name of the environment
@@ -57,8 +57,8 @@ class DDPG:
         :param actor_lr: the learning rate of the actor
         :param critic_lr: the learning rate of the critic
         :param batch_size: the batch size
-        :param tau: the soft update coefficient
         :param policy_frequency: the policy update frequency
+        :param tau: the soft update coefficient
         :param write_frequency: the write frequency
         :param save_folder: the folder to save the model
         """
@@ -80,12 +80,13 @@ class DDPG:
         # initialize the actor and critic networks
         self.actor = actor_class(self.env).to(self.device)
         self.actor_target = actor_class(self.env).to(self.device)
+
         self.qf_1 = critic_class(self.env).to(self.device)
         self.qf_1_target = critic_class(self.env).to(self.device)
 
         # copy the parameters of the policy networks to the target networks
-        self.qf_1_target.load_state_dict(self.qf_1.state_dict())
         self.actor_target.load_state_dict(self.actor.state_dict())
+        self.qf_1_target.load_state_dict(self.qf_1.state_dict())
 
         # initialize the optimizers
         self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=actor_lr)
@@ -110,8 +111,8 @@ class DDPG:
         self.tau = tau
 
         # * for the tensorboard writer
-        run_name = "{}-{}-{}".format(exp_name, seed,
-                                     datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d-%H:%M:%S'))
+        run_name = "{}-{}-{}-{}".format(exp_name, env_id, seed,
+                                        datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d-%H:%M:%S'))
         os.makedirs("./runs/", exist_ok=True)
         self.writer = SummaryWriter(os.path.join("./runs/", run_name))
         self.write_frequency = write_frequency
@@ -122,7 +123,7 @@ class DDPG:
     def make_env(self, env_id, seed, render):
         env = gym.make(env_id) if not render else gym.make(env_id, render_mode="human")
 
-        assert isinstance(env.action_space, gym.spaces.Box), "only continuous action space is supported for SAC"
+        assert isinstance(env.action_space, gym.spaces.Box), "only continuous action space is supported for DDPG"
 
         # TODO: check whether the seed is set
         env.action_space.seed(seed)
@@ -194,6 +195,11 @@ class DDPG:
                 target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
             for param, target_param in zip(self.qf_1.parameters(), self.qf_1_target.parameters()):
                 target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
+
+        if global_step % self.write_frequency == 0:
+            self.writer.add_scalar("charts/qf1_a_values", qf1_a_values.mean().item(), global_step)
+            self.writer.add_scalar("charts/qf1_loss", qf1_loss.item(), global_step)
+            self.writer.add_scalar("charts/actor_loss", actor_loss.item(), global_step)
 
     def save(self, indicator="best"):
         if indicator.startswith("best") or indicator.startswith("final"):

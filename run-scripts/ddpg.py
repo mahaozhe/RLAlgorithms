@@ -1,5 +1,5 @@
 """
-The script to DDPG on continuous control environments.
+The script to run DDPG on continuous control environments.
 """
 
 import argparse
@@ -30,9 +30,9 @@ def parse_args():
     parser.add_argument("--critic-lr", type=float, default=3e-4)
 
     parser.add_argument("--exploration-noise", type=float, default=0.1)
-    parser.add_argument("--tau", type=float, default=0.005)
 
     parser.add_argument("--policy-frequency", type=int, default=2)
+    parser.add_argument("--tau", type=float, default=0.005)
 
     parser.add_argument("--write-frequency", type=int, default=100)
     parser.add_argument("--save-folder", type=str, default="./ddpg/")
@@ -49,8 +49,8 @@ def run():
 
     agent = DDPG(
         env_id=args.env_id,
-        actor_class=DeterministicActorClassicControl,
-        critic_class=QNetworkClassicControl,
+        actor_class=DeterministicActorContinuousControl,
+        critic_class=QNetworkContinuousControl,
         exp_name=args.exp_name,
         render=args.render,
         seed=args.seed,
@@ -62,8 +62,8 @@ def run():
         actor_lr=args.actor_lr,
         critic_lr=args.critic_lr,
         batch_size=args.batch_size,
-        tau=args.tau,
         policy_frequency=args.policy_frequency,
+        tau=args.tau,
         write_frequency=args.write_frequency,
         save_folder=args.save_folder
     )
