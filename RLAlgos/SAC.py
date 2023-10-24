@@ -385,7 +385,7 @@ class SAC_Atari(SAC):
                 qf_1_values = self.qf_1(data.observations)
                 qf_2_values = self.qf_2(data.observations)
                 min_qf_values = torch.min(qf_1_values, qf_2_values)
-            actor_loss = (action_probs * (self.alpha * log_pi) - min_qf_values).mean()
+            actor_loss = (action_probs * (self.alpha * log_pi - min_qf_values)).mean()
 
             self.actor_optimizer.zero_grad()
             actor_loss.backward()
