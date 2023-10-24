@@ -4,6 +4,8 @@ Some self-defined wrappers for the MiniGrid environment.
 
 import gymnasium as gym
 
+from gymnasium.core import ObservationWrapper
+
 
 class AgentLocation(gym.core.Wrapper):
     """
@@ -153,3 +155,38 @@ class AutoPickUpKeyOpenDoor(gym.core.Wrapper):
                 door_obj = env.grid.get(door_locs[i][0], door_locs[i][1])
                 door_obj.is_locked = False
                 door_obj.is_open = True
+
+
+class RGBImgObsRevChannelWrapper(ObservationWrapper):
+    """
+    The wrapper to use fully observable RGB image as observation,
+    with the channel order as [channel, width, height].
+    """
+
+    def __init__(self, env, tile_size=8):
+        super().__init__(env)
+
+        self.tile_size = tile_size
+
+        new_image_space = gym.spaces.Box(
+            low=0,
+            high=255,
+            shape=(
+                3,
+                self.unwrapped.width * tile_size,
+                self.unwrapped.height * tile_size,
+            ),
+            dtype="uint8",
+        )
+
+        self.observation_space = gym.spaces.Dict(
+            {**self.observation_space.spaces, "image": new_image_space}
+        )
+
+    def observation(self, obs):
+        rgb_image = self.get_frame(highlight=self.unwrapped.highlight, tile_size=self.tile_size)
+
+        # change the channel order to [channel, width, height]
+        rgb_image = rgb_image.transpose(2, 0, 1)
+
+        return {**obs, "image": rgb_image}
