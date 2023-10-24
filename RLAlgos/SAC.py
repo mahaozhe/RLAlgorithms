@@ -127,7 +127,7 @@ class SAC:
 
         # * for the tensorboard writer
         run_name = "{}-{}-{}-{}".format(exp_name, env_id, seed,
-                                        datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d-%H:%M:%S'))
+                                        datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d-%H-%M-%S'))
         os.makedirs("./runs/", exist_ok=True)
         self.writer = SummaryWriter(os.path.join("./runs/", run_name))
         self.write_frequency = write_frequency
@@ -163,8 +163,10 @@ class SAC:
             if global_step < learning_starts:
                 action = self.env.action_space.sample()
             else:
-                action, _, _ = self.actor.get_action(torch.Tensor(obs).to(self.device))
-                action = action.detach().cpu().numpy()
+                # add one dimension to the observation
+                action, _, _ = self.actor.get_action(torch.Tensor(np.expand_dims(obs, axis=0)).to(self.device))
+                # action, _, _ = self.actor.get_action(torch.Tensor(obs).to(self.device))
+                action = action.detach().cpu().numpy()[0]
 
             next_obs, reward, terminated, truncated, info = self.env.step(action)
 
@@ -341,7 +343,7 @@ class SAC_Atari(SAC):
         env.observation_space.seed(seed)
 
         # some wrappers for the atari environment
-        env = gym.wrappers.AtariPreprocessing(env)
+        env = gym.wrappers.AtariPreprocessing(env, frame_skip=1)
         env = gym.wrappers.FrameStack(env, 4)
 
         # to automatically record the episodic return
@@ -359,7 +361,8 @@ class SAC_Atari(SAC):
                 qf_2_next_target = self.qf_2_target(data.next_observations)
                 # we can use the action probabilities instead of MC sampling to estimate the expectation
                 min_qf_next_target = next_state_action_probs * (
-                        torch.min(qf_1_next_target, qf_2_next_target) - self.alpha * next_state_log_pi).sum(dim=1)
+                        torch.min(qf_1_next_target, qf_2_next_target) - self.alpha * next_state_log_pi)
+                min_qf_next_target = min_qf_next_target.sum(dim=1)
                 next_q_value = data.rewards.flatten() + \
                                (1 - data.dones.flatten()) * self.gamma * (min_qf_next_target)
 
