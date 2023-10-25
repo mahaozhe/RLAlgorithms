@@ -148,15 +148,16 @@ class SAC:
                 action = action.detach().cpu().numpy()[0]
 
             next_obs, reward, terminated, truncated, info = self.env.step(action)
+            done = terminated or truncated
 
             if "episode" in info:
                 print(f"global_step={global_step}, episodic_return={info['episode']['r']}")
                 self.writer.add_scalar("charts/episodic_return", info["episode"]["r"], global_step)
                 self.writer.add_scalar("charts/episodic_length", info["episode"]["l"], global_step)
 
-            self.replay_buffer.add(obs, next_obs, action, reward, terminated, info)
+            self.replay_buffer.add(obs, next_obs, action, reward, done, info)
 
-            if not terminated:
+            if not done:
                 obs = next_obs
             else:
                 obs, _ = self.env.reset()
