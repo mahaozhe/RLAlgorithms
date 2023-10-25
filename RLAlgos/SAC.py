@@ -39,17 +39,16 @@ class SAC:
     The Soft Actor-Critic (SAC) algorithm.
     """
 
-    def __init__(self, env_id, actor_class, critic_class, exp_name="sac", render=False, seed=1, cuda=0, gamma=0.99,
+    def __init__(self, env, actor_class, critic_class, exp_name="sac", seed=1, cuda=0, gamma=0.99,
                  buffer_size=1000000, rb_optimize_memory=False, batch_size=256, policy_lr=3e-4, q_lr=1e-3,
                  alpha_lr=1e-4, target_network_frequency=1, tau=0.005, policy_frequency=2, alpha=0.2,
                  alpha_autotune=True, write_frequency=100, save_folder="./sac/"):
         """
         Initialize the SAC algorithm.
-        :param env_id: the name of the environment
+        :param env: the gymnasium-based environment
         :param actor_class: the actor class
         :param critic_class: the critic class
         :param exp_name: the name of the experiment
-        :param render: whether to render the environment
         :param seed: the random seed
         :param cuda: the cuda device
         :param gamma: the discount factor
@@ -80,7 +79,7 @@ class SAC:
 
         self.device = torch.device("cuda:{}".format(cuda) if torch.cuda.is_available() else "cpu")
 
-        self.env = self.make_env(env_id, seed, render)
+        self.env = env
 
         # initialize the actor and critic networks
         self.actor = actor_class(self.env).to(self.device)
@@ -126,7 +125,7 @@ class SAC:
         self.tau = tau
 
         # * for the tensorboard writer
-        run_name = "{}-{}-{}-{}".format(exp_name, env_id, seed,
+        run_name = "{}-{}-{}-{}".format(exp_name, env.unwrapped.spec.id, seed,
                                         datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d-%H-%M-%S'))
         os.makedirs("./runs/", exist_ok=True)
         self.writer = SummaryWriter(os.path.join("./runs/", run_name))
@@ -134,26 +133,6 @@ class SAC:
 
         self.save_folder = save_folder
         os.makedirs(self.save_folder, exist_ok=True)
-
-    def make_env(self, env_id, seed, render):
-        """
-        Make the environment.
-        :param env_id: the name of the environment
-        :param seed: the random seed
-        :param render: whether to render the environment
-        :return: the environment
-        """
-        env = gym.make(env_id) if not render else gym.make(env_id, render_mode="human")
-
-        assert isinstance(env.action_space, gym.spaces.Box), "only continuous action space is supported for SAC"
-
-        # TODO: check whether the seed is set
-        env.action_space.seed(seed)
-        env.observation_space.seed(seed)
-
-        env = gym.wrappers.RecordEpisodeStatistics(env)
-
-        return env
 
     def learn(self, total_timesteps=1000000, learning_starts=5000):
 
@@ -286,21 +265,18 @@ class SAC:
 class SAC_Atari(SAC):
     """
     The SAC algorithm for Atari games.
-
-    TODO: to complete.
     """
 
-    def __init__(self, env_id, actor_class, critic_class, exp_name="sac-atari", render=False, seed=1, cuda=0,
+    def __init__(self, env, actor_class, critic_class, exp_name="sac-atari", seed=1, cuda=0,
                  gamma=0.99, buffer_size=1000000, rb_optimize_memory=False, batch_size=256, policy_lr=3e-4, q_lr=3e-4,
                  eps=1e-4, alpha_lr=1e-4, target_network_frequency=8000, tau=1, policy_frequency=4, alpha=0.2,
                  alpha_autotune=True, target_entropy_scale=0.89, write_frequency=100, save_folder="./sac/"):
         """
         Initialize the SAC algorithm.
-        :param env_id: the name of the environment
+        :param env: the gymnasium-based environment
         :param actor_class: the actor class
         :param critic_class: the critic class
         :param exp_name: the name of the experiment
-        :param render: whether to render the environment
         :param seed: the random seed
         :param cuda: the cuda device
         :param gamma: the discount factor
@@ -320,8 +296,8 @@ class SAC_Atari(SAC):
         :param write_frequency: the write frequency
         :param save_folder: the folder to save the model
         """
-        super(SAC_Atari, self).__init__(env_id, actor_class, critic_class, exp_name, render, seed, cuda, gamma,
-                                        buffer_size, rb_optimize_memory, batch_size, policy_lr, q_lr, alpha_lr,
+        super(SAC_Atari, self).__init__(env, actor_class, critic_class, exp_name, seed, cuda, gamma, buffer_size,
+                                        rb_optimize_memory, batch_size, policy_lr, q_lr, alpha_lr,
                                         target_network_frequency, tau, policy_frequency, alpha, alpha_autotune,
                                         write_frequency, save_folder)
 
@@ -331,25 +307,6 @@ class SAC_Atari(SAC):
         if alpha_autotune:
             self.target_entropy = -target_entropy_scale * torch.log(1 / torch.tensor(self.env.action_space.n))
             self.alpha_optimizer = optim.Adam([self.log_alpha], lr=alpha_lr, eps=eps)
-
-    def make_env(self, env_id, seed, render):
-        env = gym.make(env_id) if not render else gym.make(env_id, render_mode="human")
-
-        assert isinstance(env.action_space,
-                          gym.spaces.Discrete), "only discrete action space is supported for SAC Atari"
-
-        # TODO: check whether the seed is set
-        env.action_space.seed(seed)
-        env.observation_space.seed(seed)
-
-        # some wrappers for the atari environment
-        env = gym.wrappers.AtariPreprocessing(env, frame_skip=1)
-        env = gym.wrappers.FrameStack(env, 4)
-
-        # to automatically record the episodic return
-        env = gym.wrappers.RecordEpisodeStatistics(env)
-
-        return env
 
     def optimize(self, global_step):
         if global_step % self.policy_frequency == 0:
