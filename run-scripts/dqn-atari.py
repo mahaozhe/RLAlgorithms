@@ -4,8 +4,6 @@ The script to run DQN on Atari environments.
 
 import argparse
 
-import gymnasium as gym
-
 from RLAlgos.DQN import DQN
 
 from Networks.QNetworks import QNetAtari
