@@ -38,12 +38,12 @@ class DDPG:
     The Deep Deterministic Policy Gradient (DDPG) algorithm.
     """
 
-    def __init__(self, env_id, actor_class, critic_class, exp_name="ddpg", render=False, seed=1, cuda=0, gamma=0.99,
+    def __init__(self, env, actor_class, critic_class, exp_name="ddpg", seed=1, cuda=0, gamma=0.99,
                  buffer_size=1000000, rb_optimize_memory=False, exploration_noise=0.1, actor_lr=3e-4, critic_lr=3e-4,
                  batch_size=256, policy_frequency=2, tau=0.005, write_frequency=100, save_folder="./ddpg/"):
         """
         Initialize the DDPG algorithm.
-        :param env_id: the name of the environment
+        :param env: the gymnasium-based environment
         :param actor_class: the actor class
         :param critic_class: the critic class
         :param exp_name: the name of the experiment
@@ -75,7 +75,7 @@ class DDPG:
 
         self.device = torch.device("cuda:{}".format(cuda) if torch.cuda.is_available() else "cpu")
 
-        self.env = self.make_env(env_id, seed, render)
+        self.env = env
 
         # initialize the actor and critic networks
         self.actor = actor_class(self.env).to(self.device)
@@ -111,7 +111,7 @@ class DDPG:
         self.tau = tau
 
         # * for the tensorboard writer
-        run_name = "{}-{}-{}-{}".format(exp_name, env_id, seed,
+        run_name = "{}-{}-{}-{}".format(exp_name, env.unwrapped.spec.id, seed,
                                         datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d-%H:%M:%S'))
         os.makedirs("./runs/", exist_ok=True)
         self.writer = SummaryWriter(os.path.join("./runs/", run_name))
@@ -119,19 +119,6 @@ class DDPG:
 
         self.save_folder = save_folder
         os.makedirs(self.save_folder, exist_ok=True)
-
-    def make_env(self, env_id, seed, render):
-        env = gym.make(env_id) if not render else gym.make(env_id, render_mode="human")
-
-        assert isinstance(env.action_space, gym.spaces.Box), "only continuous action space is supported for DDPG"
-
-        # TODO: check whether the seed is set
-        env.action_space.seed(seed)
-        env.observation_space.seed(seed)
-
-        env = gym.wrappers.RecordEpisodeStatistics(env)
-
-        return env
 
     def learn(self, total_timesteps=1000000, learning_starts=25000):
 
