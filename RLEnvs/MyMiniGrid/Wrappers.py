@@ -190,3 +190,30 @@ class RGBImgObsRevChannelWrapper(ObservationWrapper):
         rgb_image = rgb_image.transpose(2, 0, 1)
 
         return {**obs, "image": rgb_image}
+
+
+class NormalRevChannelWrapper(ObservationWrapper):
+    """
+    The wrapper to transpose the channel from [W,H,C] to [C,W,H], for normal observation.
+    """
+
+    def __init__(self, env):
+        super().__init__(env)
+
+        obs_shape = env.observation_space.spaces["image"].shape
+
+        new_image_space = gym.spaces.Box(
+            low=0,
+            high=255,
+            shape=(3, obs_shape[0], obs_shape[1]),
+            dtype="uint8",
+        )
+
+        self.observation_space = gym.spaces.Dict(
+            {**self.observation_space.spaces, "image": new_image_space}
+        )
+
+    def observation(self, obs):
+        reversed_grid = obs['image'].transpose(2, 0, 1)
+
+        return {**obs, "image": reversed_grid}
