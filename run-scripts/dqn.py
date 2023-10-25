@@ -8,6 +8,8 @@ from RLAlgos.DQN import DQN
 
 from Networks.QNetworks import QNetClassicControl
 
+from utils.env_makers import classic_control_env_maker
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Run DQN on classic control environments.")
@@ -48,27 +50,15 @@ def parse_args():
 def run():
     args = parse_args()
 
-    agent = DQN(
-        env_id=args.env_id,
-        q_network_class=QNetClassicControl,
-        exp_name=args.exp_name,
-        render=args.render,
-        seed=args.seed,
-        cuda=args.cuda,
-        learning_rate=args.learning_rate,
-        buffer_size=args.buffer_size,
-        rb_optimize_memory=args.rb_optimize_memory,
-        gamma=args.gamma,
-        tau=args.tau,
-        target_network_frequency=args.target_network_frequency,
-        batch_size=args.batch_size,
-        start_e=args.start_e,
-        end_e=args.end_e,
-        exploration_fraction=args.exploration_fraction,
-        train_frequency=args.train_frequency,
-        write_frequency=args.write_frequency,
-        save_folder=args.save_folder
-    )
+    env = classic_control_env_maker(env_id=args.env_id, seed=args.seed, render=args.render)
+
+    agent = DQN(env=env, q_network_class=QNetClassicControl, exp_name=args.exp_name, seed=args.seed, cuda=args.cuda,
+                learning_rate=args.learning_rate, buffer_size=args.buffer_size,
+                rb_optimize_memory=args.rb_optimize_memory, gamma=args.gamma, tau=args.tau,
+                target_network_frequency=args.target_network_frequency, batch_size=args.batch_size,
+                start_e=args.start_e, end_e=args.end_e, exploration_fraction=args.exploration_fraction,
+                train_frequency=args.train_frequency, write_frequency=args.write_frequency,
+                save_folder=args.save_folder)
 
     agent.learn(total_timesteps=args.total_timesteps, learning_starts=args.learning_starts)
 
