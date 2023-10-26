@@ -1,8 +1,6 @@
 """
 The Proximal Policy Optimization (PPO) algorithm.
 
-* Do not support the vectorized environment.
-
 * Both discrete and continuous action spaces are supported.
 
 references:

@@ -1,8 +1,6 @@
 """
 The Deep Q Network (DQN) algorithm.
 
-* Do not support the vectorized environment.
-
 references:
 - cleanrl: https://docs.cleanrl.dev/rl-algorithms/dqn/
 - cleanrl codes (dqn): https://github.com/vwxyzjn/cleanrl/blob/master/cleanrl/dqn.py

@@ -1,8 +1,6 @@
 """
 The Twin Delayed Deep Deterministic Policy Gradient (TD3) algorithm.
 
-* Do not support the vectorized environment.
-
 * Only continuous action spaces are supported.
 
 references:

@@ -1,8 +1,6 @@
 """
 The Deep Deterministic Policy Gradient (DDPG) algorithm.
 
-* Do not support the vectorized environment.
-
 * Only continuous action spaces are supported.
 
 references:
