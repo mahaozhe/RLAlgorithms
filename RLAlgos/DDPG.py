@@ -15,8 +15,6 @@ references:
 ! Note: the code is completed with the help of copilot.
 """
 
-import gymnasium as gym
-
 import numpy as np
 
 import torch
