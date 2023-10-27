@@ -11,6 +11,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from utils.network_utils import layer_init_bias
+
 
 class QNetClassicControl(nn.Module):
     """
@@ -68,25 +70,20 @@ class SACSoftQNetworkAtari(nn.Module):
         super().__init__()
         obs_shape = env.observation_space.shape
 
-        def layer_init(layer, bias_const=0.0):
-            nn.init.kaiming_normal_(layer.weight)
-            torch.nn.init.constant_(layer.bias, bias_const)
-            return layer
-
         self.conv = nn.Sequential(
-            layer_init(nn.Conv2d(obs_shape[0], 32, kernel_size=8, stride=4)),
+            layer_init_bias(nn.Conv2d(obs_shape[0], 32, kernel_size=8, stride=4)),
             nn.ReLU(),
-            layer_init(nn.Conv2d(32, 64, kernel_size=4, stride=2)),
+            layer_init_bias(nn.Conv2d(32, 64, kernel_size=4, stride=2)),
             nn.ReLU(),
-            layer_init(nn.Conv2d(64, 64, kernel_size=3, stride=1)),
+            layer_init_bias(nn.Conv2d(64, 64, kernel_size=3, stride=1)),
             nn.Flatten(),
         )
 
         with torch.inference_mode():
             output_dim = self.conv(torch.zeros(1, *obs_shape)).shape[1]
 
-        self.fc1 = layer_init(nn.Linear(output_dim, 512))
-        self.fc_q = layer_init(nn.Linear(512, env.action_space.n))
+        self.fc1 = layer_init_bias(nn.Linear(output_dim, 512))
+        self.fc_q = layer_init_bias(nn.Linear(512, env.action_space.n))
 
     def forward(self, x):
         x = F.relu(self.conv(x / 255.0))
