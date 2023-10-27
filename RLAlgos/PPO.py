@@ -12,6 +12,7 @@ references:
     * https://arxiv.org/abs/1707.06347
     * https://arxiv.org/abs/2005.12729
     * https://arxiv.org/abs/1707.02286
+    * (RPO): https://arxiv.org/abs/2212.07536
 
 ! Note: the code is completed with the help of copilot.
 """
@@ -42,7 +43,7 @@ class PPO:
     def __init__(self, envs, agent_class, exp_name="ppo", seed=1, cuda=0, gamma=0.99, gae_lambda=0.95,
                  rollout_length=128, lr=2.5e-4, eps=1e-5, anneal_lr=True, num_mini_batches=4, update_epochs=4,
                  norm_adv=True, clip_value_loss=True, clip_coef=0.2, entropy_coef=0.01, value_coef=0.5,
-                 max_grad_norm=0.5, target_kl=None, write_frequency=100, save_folder="./ppo/"):
+                 max_grad_norm=0.5, target_kl=None, rpo_alpha=None, write_frequency=100, save_folder="./ppo/"):
         """
         The initialization of the PPO class.
         :param envs: the VECTOR of gymnasium-based environment.
@@ -65,6 +66,7 @@ class PPO:
         :param value_coef: the value coefficient.
         :param max_grad_norm: the maximum gradient norm.
         :param target_kl: the target kl divergence.
+        :param rpo_alpha: the alpha parameter in RPO.
         :param write_frequency: the frequency of writing logs.
         :param save_folder: the folder to save the model.
         """
@@ -86,7 +88,12 @@ class PPO:
         self.envs = envs
         self.num_envs = self.envs.num_envs
 
-        self.agent = agent_class(self.envs).to(self.device)
+        if rpo_alpha is None:
+            # using normal PPO agent
+            self.agent = agent_class(self.envs).to(self.device)
+        else:
+            # using RPO agent
+            self.agent = agent_class(self.envs, rpo_alpha, cuda=cuda).to(self.device)
 
         self.anneal_lr = anneal_lr
         self.lr = lr

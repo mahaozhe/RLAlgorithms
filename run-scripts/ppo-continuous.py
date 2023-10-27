@@ -14,7 +14,7 @@ from utils.env_makers import sync_vector_mujoco_envs_maker
 def parse_args():
     parser = argparse.ArgumentParser(description="Run PPO on classic control environments.")
 
-    parser.add_argument("--exp-name", type=str, default="ppo")
+    parser.add_argument("--exp-name", type=str, default="ppo-mujoco")
 
     parser.add_argument("--env-id", type=str, default="Ant-v4")
     parser.add_argument("--num-envs", type=int, default=1)
@@ -42,7 +42,7 @@ def parse_args():
     parser.add_argument("--target-kl", type=float, default=None)
 
     parser.add_argument("--write-frequency", type=int, default=100)
-    parser.add_argument("--save-folder", type=str, default="./ppo/")
+    parser.add_argument("--save-folder", type=str, default="./ppo-mujoco/")
 
     parser.add_argument("--total-timesteps", type=int, default=1000000)
 
@@ -61,8 +61,8 @@ def run():
                 eps=args.eps, anneal_lr=args.anneal_lr, num_mini_batches=args.num_mini_batches,
                 update_epochs=args.update_epochs, norm_adv=args.norm_adv, clip_value_loss=args.clip_value_loss,
                 clip_coef=args.clip_coef, entropy_coef=args.entropy_coef, value_coef=args.value_coef,
-                max_grad_norm=args.max_grad_norm, target_kl=args.target_kl, write_frequency=args.write_frequency,
-                save_folder=args.save_folder)
+                max_grad_norm=args.max_grad_norm, target_kl=args.target_kl, rpo_alpha=None,
+                write_frequency=args.write_frequency, save_folder=args.save_folder)
 
     agent.learn(total_timesteps=args.total_timesteps)
 

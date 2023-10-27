@@ -22,7 +22,7 @@ All RL environments packages can be found in [RLEnvs](./RLEnvs/) package.
 - [ ] PPG
 - [x] [SAC](./RLAlgos/SAC.py)
 - [x] [PPO](./RLAlgos/PPO.py)
-- [ ] RPO
+- [x] [RPO](./RLAlgos/PPO.py)
 - [ ] RND
 - [ ] QDagger
 
@@ -35,6 +35,8 @@ All RL environments packages can be found in [RLEnvs](./RLEnvs/) package.
     * [PPO in classic control](./run-scripts/ppo.py)
     * [PPO in Atari games](./run-scripts/ppo-atari.py)
     * [PPO in continuous control (e.g., Mujoco)](./run-scripts/ppo-continuous.py)
+- RPO algorithm (can only work on continuous action spaces):
+    * [RPO in continuous control](./run-scripts/rpo.py)
 - DDPG algorithm (can only work on continuous action spaces):
     * [DDPG in continuous control](./run-scripts/ddpg.py)
 - TD3 algorithm (can only work on continuous action spaces):
