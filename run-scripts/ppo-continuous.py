@@ -1,14 +1,14 @@
 """
-The script to run PPO on classic control environments (with discrete action space).
+The script to run PPO on continuous control environments.
 """
 
 import argparse
 
 from RLAlgos.PPO import PPO
 
-from Networks.CombinedActorCriticNetworks import PPOClassicControlAgent
+from Networks.CombinedActorCriticNetworks import PPOMujocoAgent
 
-from utils.env_makers import sync_vector_classic_envs_maker
+from utils.env_makers import sync_vector_mujoco_envs_maker
 
 
 def parse_args():
@@ -16,19 +16,19 @@ def parse_args():
 
     parser.add_argument("--exp-name", type=str, default="ppo")
 
-    parser.add_argument("--env-id", type=str, default="CartPole-v1")
-    parser.add_argument("--num-envs", type=int, default=4)
+    parser.add_argument("--env-id", type=str, default="Ant-v4")
+    parser.add_argument("--num-envs", type=int, default=1)
 
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--cuda", type=int, default=0)
     parser.add_argument("--gamma", type=float, default=0.99)
     parser.add_argument("--gae-lambda", type=float, default=0.95)
 
-    parser.add_argument("--rollout-length", type=int, default=128)
-    parser.add_argument("--num-mini-batches", type=int, default=4)
-    parser.add_argument("--update-epochs", type=int, default=4)
+    parser.add_argument("--rollout-length", type=int, default=2048)
+    parser.add_argument("--num-mini-batches", type=int, default=32)
+    parser.add_argument("--update-epochs", type=int, default=10)
 
-    parser.add_argument("--lr", type=float, default=2.5e-4)
+    parser.add_argument("--lr", type=float, default=3e-4)
     parser.add_argument("--eps", type=float, default=1e-5)
     parser.add_argument("--anneal-lr", type=bool, default=True)
 
@@ -36,7 +36,7 @@ def parse_args():
     parser.add_argument("--clip-value-loss", type=bool, default=True)
 
     parser.add_argument("--clip-coef", type=float, default=0.2)
-    parser.add_argument("--entropy-coef", type=float, default=0.01)
+    parser.add_argument("--entropy-coef", type=float, default=0.0)
     parser.add_argument("--value-coef", type=float, default=0.5)
     parser.add_argument("--max-grad-norm", type=float, default=0.5)
     parser.add_argument("--target-kl", type=float, default=None)
@@ -44,7 +44,7 @@ def parse_args():
     parser.add_argument("--write-frequency", type=int, default=100)
     parser.add_argument("--save-folder", type=str, default="./ppo/")
 
-    parser.add_argument("--total-timesteps", type=int, default=500000)
+    parser.add_argument("--total-timesteps", type=int, default=1000000)
 
     args = parser.parse_args()
     return args
@@ -53,9 +53,10 @@ def parse_args():
 def run():
     args = parse_args()
 
-    envs = sync_vector_classic_envs_maker(env_id=args.env_id, num_envs=args.num_envs, seed=args.seed)
+    # ! note the env maker needs the additional argument gamma
+    envs = sync_vector_mujoco_envs_maker(env_id=args.env_id, num_envs=args.num_envs, gamma=args.gamma, seed=args.seed)
 
-    agent = PPO(envs=envs, agent_class=PPOClassicControlAgent, exp_name=args.exp_name, seed=args.seed, cuda=args.cuda,
+    agent = PPO(envs=envs, agent_class=PPOMujocoAgent, exp_name=args.exp_name, seed=args.seed, cuda=args.cuda,
                 gamma=args.gamma, gae_lambda=args.gae_lambda, rollout_length=args.rollout_length, lr=args.lr,
                 eps=args.eps, anneal_lr=args.anneal_lr, num_mini_batches=args.num_mini_batches,
                 update_epochs=args.update_epochs, norm_adv=args.norm_adv, clip_value_loss=args.clip_value_loss,

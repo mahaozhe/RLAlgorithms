@@ -138,7 +138,7 @@ class PPO:
     def learn(self, total_timesteps=500000):
         global_step = 0
 
-        next_obs = torch.Tensor(self.envs.reset()).to(self.device)
+        next_obs, _ = torch.Tensor(self.envs.reset()).to(self.device)
         next_done = torch.zeros(self.num_envs).to(self.device)
 
         # the number of updates = total_timesteps // (rollout_length * num_envs)
@@ -176,6 +176,7 @@ class PPO:
                 next_obs = torch.Tensor(next_obs).to(self.device)
                 next_done = torch.Tensor(done).to(self.device)
 
+                # Only print when at least 1 env is done
                 for item in info:
                     if "episode" in item.keys():
                         print(f"global_step={global_step}, episodic_return={info['episode']['r']}")
@@ -234,7 +235,7 @@ class PPO:
                 mb_indices = b_indices[start:end]
 
                 _, new_log_probs, entropy, new_values = self.agent.get_action_value(b_obs[mb_indices],
-                                                                                    b_actions.long()[mb_indices])
+                                                                                    b_actions[mb_indices])
                 log_ratio = new_log_probs - b_log_probs[mb_indices]
                 ratio = log_ratio.exp()
 

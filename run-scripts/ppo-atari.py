@@ -1,23 +1,23 @@
 """
-The script to run PPO on classic control environments (with discrete action space).
+The script to run PPO on Atari games (with discrete action space).
 """
 
 import argparse
 
 from RLAlgos.PPO import PPO
 
-from Networks.CombinedActorCriticNetworks import PPOClassicControlAgent
+from Networks.CombinedActorCriticNetworks import PPOAtariAgent
 
-from utils.env_makers import sync_vector_classic_envs_maker
+from utils.env_makers import sync_vector_atari_envs_maker
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Run PPO on classic control environments.")
+    parser = argparse.ArgumentParser(description="Run PPO on Atari games environments.")
 
-    parser.add_argument("--exp-name", type=str, default="ppo")
+    parser.add_argument("--exp-name", type=str, default="ppo-atari")
 
-    parser.add_argument("--env-id", type=str, default="CartPole-v1")
-    parser.add_argument("--num-envs", type=int, default=4)
+    parser.add_argument("--env-id", type=str, default="ALE/Breakout-v5")
+    parser.add_argument("--num-envs", type=int, default=8)
 
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--cuda", type=int, default=0)
@@ -35,7 +35,7 @@ def parse_args():
     parser.add_argument("--norm-adv", type=bool, default=True)
     parser.add_argument("--clip-value-loss", type=bool, default=True)
 
-    parser.add_argument("--clip-coef", type=float, default=0.2)
+    parser.add_argument("--clip-coef", type=float, default=0.1)
     parser.add_argument("--entropy-coef", type=float, default=0.01)
     parser.add_argument("--value-coef", type=float, default=0.5)
     parser.add_argument("--max-grad-norm", type=float, default=0.5)
@@ -44,7 +44,7 @@ def parse_args():
     parser.add_argument("--write-frequency", type=int, default=100)
     parser.add_argument("--save-folder", type=str, default="./ppo/")
 
-    parser.add_argument("--total-timesteps", type=int, default=500000)
+    parser.add_argument("--total-timesteps", type=int, default=10000000)
 
     args = parser.parse_args()
     return args
@@ -53,9 +53,9 @@ def parse_args():
 def run():
     args = parse_args()
 
-    envs = sync_vector_classic_envs_maker(env_id=args.env_id, num_envs=args.num_envs, seed=args.seed)
+    envs = sync_vector_atari_envs_maker(env_id=args.env_id, num_envs=args.num_envs, seed=args.seed)
 
-    agent = PPO(envs=envs, agent_class=PPOClassicControlAgent, exp_name=args.exp_name, seed=args.seed, cuda=args.cuda,
+    agent = PPO(envs=envs, agent_class=PPOAtariAgent, exp_name=args.exp_name, seed=args.seed, cuda=args.cuda,
                 gamma=args.gamma, gae_lambda=args.gae_lambda, rollout_length=args.rollout_length, lr=args.lr,
                 eps=args.eps, anneal_lr=args.anneal_lr, num_mini_batches=args.num_mini_batches,
                 update_epochs=args.update_epochs, norm_adv=args.norm_adv, clip_value_loss=args.clip_value_loss,
