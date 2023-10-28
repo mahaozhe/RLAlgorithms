@@ -87,6 +87,8 @@ class DDPG:
         self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=actor_lr)
         self.q_optimizer = optim.Adam(self.qf_1.parameters(), lr=critic_lr)
 
+        # + modify the observation space to be float32
+        self.env.observation_space.dtype = np.float32
         # initialize the replay buffer
         self.replay_buffer = ReplayBuffer(
             buffer_size,
