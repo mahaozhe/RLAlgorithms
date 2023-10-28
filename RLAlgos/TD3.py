@@ -115,7 +115,7 @@ class TD3:
 
         # * for the tensorboard writer
         run_name = "{}-{}-{}-{}".format(exp_name, env.unwrapped.spec.id, seed,
-                                        datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d-%H:%M:%S'))
+                                        datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d-%H-%M-%S'))
         os.makedirs("./runs/", exist_ok=True)
         self.writer = SummaryWriter(os.path.join("./runs/", run_name))
         self.write_frequency = write_frequency
