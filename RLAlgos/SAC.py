@@ -103,6 +103,8 @@ class SAC:
         else:
             self.alpha = alpha
 
+        # + modify the observation space to be float32
+        self.env.observation_space.dtype = np.float32
         # initialize the replay buffer
         self.replay_buffer = ReplayBuffer(
             buffer_size,

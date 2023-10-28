@@ -18,10 +18,10 @@ from utils.network_utils import layer_init_bias
 class SACActor(nn.Module):
     def __init__(self, env):
         super().__init__()
-        self.fc1 = nn.Linear(np.array(env.single_observation_space.shape).prod(), 256)
+        self.fc1 = nn.Linear(np.array(env.observation_space.shape).prod(), 256)
         self.fc2 = nn.Linear(256, 256)
-        self.fc_mean = nn.Linear(256, np.prod(env.single_action_space.shape))
-        self.fc_logstd = nn.Linear(256, np.prod(env.single_action_space.shape))
+        self.fc_mean = nn.Linear(256, np.prod(env.action_space.shape))
+        self.fc_logstd = nn.Linear(256, np.prod(env.action_space.shape))
         # action rescaling
         self.register_buffer("action_scale",
                              torch.tensor((env.action_space.high - env.action_space.low) / 2.0, dtype=torch.float32))
