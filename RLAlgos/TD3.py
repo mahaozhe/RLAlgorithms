@@ -93,6 +93,8 @@ class TD3:
         self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=actor_lr)
         self.q_optimizer = optim.Adam(list(self.qf_1.parameters()) + list(self.qf_2.parameters()), lr=critic_lr)
 
+        # + modify the observation space to be float32
+        self.env.observation_space.dtype = np.float32
         # initialize the replay buffer
         self.replay_buffer = ReplayBuffer(
             buffer_size,
@@ -166,7 +168,7 @@ class TD3:
                 -self.noise_clip, self.noise_clip) * self.actor.action_scale
 
             next_state_actions = (self.actor_target(data.next_observations) + clipped_noise).clamp(
-                self.env.action_space.low.item(), self.env.action_space.high.item())
+                self.env.action_space.low[0].item(), self.env.action_space.high[0].item())
 
             qf1_next_target = self.qf_1_target(data.next_observations, next_state_actions)
             qf2_next_target = self.qf_2_target(data.next_observations, next_state_actions)
