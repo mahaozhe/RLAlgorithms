@@ -9,15 +9,15 @@ from RLAlgos.TD3 import TD3
 from Networks.ActorNetworks import DeterministicActorContinuousControl
 from Networks.QValueNetworks import QNetworkContinuousControl
 
-from utils.env_makers import classic_control_env_maker
+from utils.env_makers import robotics_env_maker
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Run TD3 on continuous control environments.")
+    parser = argparse.ArgumentParser(description="Run TD3 on robotics environments.")
 
-    parser.add_argument("--exp-name", type=str, default="td3")
+    parser.add_argument("--exp-name", type=str, default="td3-robotics")
 
-    parser.add_argument("--env-id", type=str, default="Ant-v4")
+    parser.add_argument("--env-id", type=str, default="FetchReach-v2")
     parser.add_argument("--render", type=bool, default=False)
 
     parser.add_argument("--seed", type=int, default=1)
@@ -39,7 +39,7 @@ def parse_args():
     parser.add_argument("--tau", type=float, default=0.005)
 
     parser.add_argument("--write-frequency", type=int, default=100)
-    parser.add_argument("--save-folder", type=str, default="./td3/")
+    parser.add_argument("--save-folder", type=str, default="./td3-robotics/")
 
     parser.add_argument("--total-timesteps", type=int, default=1000000)
     parser.add_argument("--learning-starts", type=int, default=25e3)
@@ -51,7 +51,7 @@ def parse_args():
 def run():
     args = parse_args()
 
-    env = classic_control_env_maker(env_id=args.env_id, seed=args.seed, render=args.render)
+    env = robotics_env_maker(env_id=args.env_id, seed=args.seed, render=args.render)
 
     agent = TD3(env=env, actor_class=DeterministicActorContinuousControl, critic_class=QNetworkContinuousControl,
                 exp_name=args.exp_name, seed=args.seed, cuda=args.cuda, gamma=args.gamma, buffer_size=args.buffer_size,
