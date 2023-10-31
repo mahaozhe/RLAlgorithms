@@ -66,6 +66,19 @@ def mujoco_env_maker(env_id, gamma, seed=1, render=False):
     return env
 
 
+def robotics_env_maker(env_id, gamma, seed=1, render=False):
+    env = gym.make(env_id) if not render else gym.make(env_id, render_mode="human")
+
+    env.action_space.seed(seed)
+    env.observation_space.seed(seed)
+
+    env = gym.wrappers.RecordEpisodeStatistics(env)
+    # + transform the reward from {-1, 0} to {0, 1}
+    env = gym.wrappers.TransformReward(env, lambda reward: reward + 1.0)
+
+    return env
+
+
 def sync_vector_classic_envs_maker(env_id, num_envs, seed=1):
     """
     Make the synchronized vectorized environments.
