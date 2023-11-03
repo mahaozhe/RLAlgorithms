@@ -2,3 +2,5 @@
 ref/
 runs/
 slurm-scripts/
+**__pycache__**
+**.pyc

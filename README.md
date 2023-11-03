@@ -28,6 +28,8 @@ All RL environments packages can be found in [RLEnvs](./RLEnvs/) package.
 
 ### Running Scripts
 
+> Note❗️: Need to execute: `export PYTHONPATH=<path to RLEnvsAlgos>:$PYTHONPATH` if you don't use PyCharm.
+
 - DQN algorithm (can only work on discrete action spaces):
     * [DQN in classic control](./run-scripts/dqn.py)
     * [DQN in Atari games](./run-scripts/dqn-atari.py)

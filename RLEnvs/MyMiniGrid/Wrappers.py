@@ -20,7 +20,7 @@ class AgentLocation(gym.core.Wrapper):
 
         agent_loc = self.unwrapped.agent_pos
 
-        info['agent_loc'] = tuple(agent_loc)
+        info["agent_loc"] = tuple(agent_loc)
 
         return observation, reward, terminated, truncated, info
 
@@ -61,7 +61,6 @@ class MovetoFourDirectionsWrapper(gym.core.Wrapper):
 
         # action 1 - move to left
         if action == 1:
-
             _, rewards, _, _, _ = self.env.step(0)
 
             o, r, te, tr, i = self.env.step(2)
@@ -179,9 +178,7 @@ class RGBImgObsRevChannelWrapper(ObservationWrapper):
             dtype="uint8",
         )
 
-        self.observation_space = gym.spaces.Dict(
-            {**self.observation_space.spaces, "image": new_image_space}
-        )
+        self.observation_space = gym.spaces.Dict({**self.observation_space.spaces, "image": new_image_space})
 
     def observation(self, obs):
         rgb_image = self.get_frame(highlight=self.unwrapped.highlight, tile_size=self.tile_size)
@@ -209,11 +206,9 @@ class NormalRevChannelWrapper(ObservationWrapper):
             dtype="uint8",
         )
 
-        self.observation_space = gym.spaces.Dict(
-            {**self.observation_space.spaces, "image": new_image_space}
-        )
+        self.observation_space = gym.spaces.Dict({**self.observation_space.spaces, "image": new_image_space})
 
     def observation(self, obs):
-        reversed_grid = obs['image'].transpose(2, 0, 1)
+        reversed_grid = obs["image"].transpose(2, 0, 1)
 
         return {**obs, "image": reversed_grid}

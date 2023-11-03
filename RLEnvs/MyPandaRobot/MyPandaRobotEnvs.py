@@ -15,12 +15,12 @@ from gymnasium.envs.registration import register
 
 class MyReachTargetTask(Task):
     def __init__(
-            self,
-            sim,
-            get_ee_position,
-            reward_type="sparse",
-            distance_threshold=0.05,
-            goal_range=0.3,
+        self,
+        sim,
+        get_ee_position,
+        reward_type="sparse",
+        distance_threshold=0.05,
+        goal_range=0.3,
     ) -> None:
         super(MyReachTargetTask, self).__init__(sim)
         self.reward_type = reward_type  # "sparse" or "dense"
@@ -84,20 +84,19 @@ class MyReachTargetTask(Task):
 
 
 class MyReachTargetEnv(RobotTaskEnv):
-
     def __init__(
-            self,
-            render_mode: str = "rgb_array",
-            reward_type: str = "sparse",
-            control_type: str = "ee",
-            renderer: str = "Tiny",
-            render_width: int = 720,
-            render_height: int = 480,
-            render_target_position=None,
-            render_distance: float = 1.4,
-            render_yaw: float = 45,
-            render_pitch: float = -30,
-            render_roll: float = 0,
+        self,
+        render_mode: str = "rgb_array",
+        reward_type: str = "sparse",
+        control_type: str = "ee",
+        renderer: str = "Tiny",
+        render_width: int = 720,
+        render_height: int = 480,
+        render_target_position=None,
+        render_distance: float = 1.4,
+        render_yaw: float = 45,
+        render_pitch: float = -30,
+        render_roll: float = 0,
     ) -> None:
         sim = PyBullet(render_mode=render_mode, renderer=renderer)
         robot = Panda(sim, block_gripper=True, base_position=np.array([-0.6, 0.0, 0.0]), control_type=control_type)

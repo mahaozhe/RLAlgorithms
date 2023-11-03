@@ -1,7 +1,6 @@
 """
 The script to run SAC on continuous control environments.
 """
-
 import argparse
 
 from RLAlgos.SAC import SAC
@@ -17,7 +16,8 @@ def parse_args():
 
     parser.add_argument("--exp-name", type=str, default="sac-robotics")
 
-    parser.add_argument("--env-id", type=str, default="FetchReach-v2")
+    # parser.add_argument("--env-id", type=str, default="FetchReach-v2")
+    parser.add_argument("--env-id", type=str, default="MyFetchRobot/Reach-Jnt-Sparse-v0")
     parser.add_argument("--render", type=bool, default=False)
 
     parser.add_argument("--seed", type=int, default=1)
@@ -55,12 +55,28 @@ def run():
 
     env = robotics_env_maker(env_id=args.env_id, seed=args.seed, render=args.render)
 
-    agent = SAC(env=env, actor_class=SACActor, critic_class=QNetworkContinuousControl, exp_name=args.exp_name,
-                seed=args.seed, cuda=args.cuda, gamma=args.gamma, buffer_size=args.buffer_size,
-                rb_optimize_memory=args.rb_optimize_memory, batch_size=args.batch_size, policy_lr=args.policy_lr,
-                q_lr=args.q_lr, alpha_lr=args.alpha_lr, target_network_frequency=args.target_network_frequency,
-                tau=args.tau, policy_frequency=args.policy_frequency, alpha=args.alpha,
-                alpha_autotune=args.alpha_autotune, write_frequency=args.write_frequency, save_folder=args.save_folder)
+    agent = SAC(
+        env=env,
+        actor_class=SACActor,
+        critic_class=QNetworkContinuousControl,
+        exp_name=args.exp_name,
+        seed=args.seed,
+        cuda=args.cuda,
+        gamma=args.gamma,
+        buffer_size=args.buffer_size,
+        rb_optimize_memory=args.rb_optimize_memory,
+        batch_size=args.batch_size,
+        policy_lr=args.policy_lr,
+        q_lr=args.q_lr,
+        alpha_lr=args.alpha_lr,
+        target_network_frequency=args.target_network_frequency,
+        tau=args.tau,
+        policy_frequency=args.policy_frequency,
+        alpha=args.alpha,
+        alpha_autotune=args.alpha_autotune,
+        write_frequency=args.write_frequency,
+        save_folder=args.save_folder,
+    )
 
     agent.learn(total_timesteps=args.total_timesteps, learning_starts=args.learning_starts)
 
