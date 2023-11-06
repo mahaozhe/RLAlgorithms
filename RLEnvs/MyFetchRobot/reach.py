@@ -2,11 +2,12 @@ import os
 
 from gymnasium.utils.ezpickle import EzPickle
 from gymnasium.envs.registration import register
-from .FetchEnv import MujocoFetchEnv
+# from .FetchEnv import MujocoFetchEnv
+from RLEnvs.MyFetchRobot.FetchEnv import MujocoFetchEnv
 
 # Ensure we get the path separator correct on windows
-# MODEL_XML_PATH = os.path.join("fetch", "reach.xml")
-MODEL_XML_PATH = "/media/simon/LocalDiskExt/ProgramData/anaconda/rlbasic/lib/python3.11/site-packages/gymnasium_robotics/envs/assets/fetch/reach.xml"
+MODEL_XML_PATH = os.path.join("fetch", "reach.xml")
+# MODEL_XML_PATH = "/media/simon/LocalDiskExt/ProgramData/anaconda/rlbasic/lib/python3.11/site-packages/gymnasium_robotics/envs/assets/fetch/reach.xml"
 
 
 class MujocoFetchReachEnv(MujocoFetchEnv, EzPickle):

@@ -18,7 +18,7 @@ def parse_args():
     parser.add_argument("--exp-name", type=str, default="sac")
 
     parser.add_argument("--env-id", type=str, default="Ant-v4")
-    parser.add_argument("--render", type=bool, default=True)
+    parser.add_argument("--render", type=bool, default=False)
 
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--cuda", type=int, default=0)

@@ -26,9 +26,12 @@ All RL environments packages can be found in [RLEnvs](./RLEnvs/) package.
 - [ ] RND
 - [ ] QDagger
 
-### Running Scripts
+### Setup
 
-> Note❗️: Need to execute: `export PYTHONPATH=<path to RLEnvsAlgos>:$PYTHONPATH` if you don't use PyCharm.
+- If you are using the `gymnasium>=0.29.1` package, to render the mujoco, robotics, etc. environments, you need to modify the `site-packages\gymnasium\envs\mujoco\mujoco_rendering.py` file: replace the `solver_iter` (in around line 593) to `solver_niter`.
+- If you don't use PyCharm, need to execute: `export PYTHONPATH=<path to RLEnvsAlgos>:$PYTHONPATH`.
+
+### Running Scripts
 
 - DQN algorithm (can only work on discrete action spaces):
     * [DQN in classic control](./run-scripts/dqn.py)
