@@ -6,9 +6,10 @@ import argparse
 from RLAlgos.SAC import SAC
 
 from Networks.ActorNetworks import SACActor
-from Networks.QValueNetworks import QNetworkContinuousControl
+from Networks.QValueNetworks import QNetworkContinuousControl, QNetworkContinuousControlNew
 
 from utils.env_makers import robotics_env_maker
+import RLEnvs.MyFetchRobot.reach
 
 
 def parse_args():
@@ -16,9 +17,9 @@ def parse_args():
 
     parser.add_argument("--exp-name", type=str, default="sac-robotics")
 
-    # parser.add_argument("--env-id", type=str, default="FetchReach-v2")
-    parser.add_argument("--env-id", type=str, default="MyFetchRobot/Reach-Jnt-Sparse-v0")
-    parser.add_argument("--render", type=bool, default=False)
+    parser.add_argument("--env-id", type=str, default="FetchReach-v2")
+    # parser.add_argument("--env-id", type=str, default="MyFetchRobot/Reach-Jnt-Sparse-v0")
+    parser.add_argument("--render", type=bool, default=True)
 
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--cuda", type=int, default=0)
@@ -44,7 +45,7 @@ def parse_args():
     parser.add_argument("--save-folder", type=str, default="./sac-robotics/")
 
     parser.add_argument("--total-timesteps", type=int, default=1000000)
-    parser.add_argument("--learning-starts", type=int, default=5e3)
+    parser.add_argument("--learning-starts", type=int, default=1e3)
 
     args = parser.parse_args()
     return args
@@ -58,7 +59,7 @@ def run():
     agent = SAC(
         env=env,
         actor_class=SACActor,
-        critic_class=QNetworkContinuousControl,
+        critic_class=QNetworkContinuousControlNew,
         exp_name=args.exp_name,
         seed=args.seed,
         cuda=args.cuda,

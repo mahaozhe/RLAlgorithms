@@ -76,7 +76,7 @@ def get_base_fetch_env(RobotEnvClass: Union[MujocoPyRobotEnv, MujocoRobotEnv]):
             self.reward_type = reward_type
 
             self.use_joint_obs = True  # enable joint space observation
-            self.use_joint_act = True  # enable joint space action
+            self.use_joint_act = False  # enable joint space action
 
             if not self.use_joint_act:
                 super().__init__(n_actions=4, **kwargs)

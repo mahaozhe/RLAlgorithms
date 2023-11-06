@@ -26,3 +26,36 @@ class QNetworkContinuousControl(nn.Module):
         x = self.fc3(x)
         return x
 
+
+class ResidualBlock(nn.Module):
+    def __init__(self, in_features, out_features, activation=nn.ReLU()):
+        super(ResidualBlock, self).__init__()
+        self.fc1 = nn.Linear(in_features, out_features)
+        self.fc2 = nn.Linear(out_features, out_features)
+        self.activation = activation
+
+    def forward(self, x):
+        residual = x
+        x = self.activation(self.fc1(x))
+        x = self.fc2(x)
+        x += residual
+        x = self.activation(x)
+        return x
+
+
+class QNetworkContinuousControlNew(nn.Module):
+    def __init__(self, env, block_num=3):
+        super().__init__()
+        self.fc1 = nn.Linear(np.array(env.observation_space.shape).prod() + np.prod(env.action_space.shape), 256)
+        self.hidden_blocks = nn.ModuleList([ResidualBlock(256, 256) for _ in range(block_num)])
+        self.fc2 = nn.Linear(256, 128)
+        self.fc3 = nn.Linear(128, 1)
+
+    def forward(self, x, a):
+        x = torch.cat([x, a], 1)
+        x = self.fc1(x)
+        for block in self.hidden_blocks:
+            x = block(x)
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+        return x
