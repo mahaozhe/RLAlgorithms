@@ -19,7 +19,7 @@ def parse_args():
 
     parser.add_argument("--env-id", type=str, default="FetchReach-v2")
     # parser.add_argument("--env-id", type=str, default="MyFetchRobot/Reach-Jnt-Sparse-v0")
-    parser.add_argument("--render", type=bool, default=True)
+    parser.add_argument("--render", type=bool, default=False)
 
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--cuda", type=int, default=0)
@@ -45,7 +45,7 @@ def parse_args():
     parser.add_argument("--save-folder", type=str, default="./sac-robotics/")
 
     parser.add_argument("--total-timesteps", type=int, default=1000000)
-    parser.add_argument("--learning-starts", type=int, default=1e3)
+    parser.add_argument("--learning-starts", type=int, default=5e3)
 
     args = parser.parse_args()
     return args
