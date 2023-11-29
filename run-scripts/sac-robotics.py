@@ -48,7 +48,7 @@ def parse_args():
     parser.add_argument("--save-folder", type=str, default="./sac-robotics/")
 
     parser.add_argument("--total-timesteps", type=int, default=1000000)
-    parser.add_argument("--learning-starts", type=int, default=1e3)
+    parser.add_argument("--learning-starts", type=int, default=5e3)
 
     args = parser.parse_args()
     return args
