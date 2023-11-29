@@ -2,14 +2,14 @@
 The script to run SAC on continuous control environments.
 """
 import argparse
-
+import sys_env
 from RLAlgos.SAC import SAC
 
 from Networks.ActorNetworks import SACActor
 from Networks.QValueNetworks import QNetworkContinuousControl, QNetworkContinuousControlNew
 
 from utils.env_makers import robotics_env_maker
-import RLEnvs.MyFetchRobot.reach
+from RLEnvs.MyFetchRobot import push, reach, slide
 
 
 def parse_args():
@@ -17,8 +17,11 @@ def parse_args():
 
     parser.add_argument("--exp-name", type=str, default="sac-robotics")
 
-    parser.add_argument("--env-id", type=str, default="FetchReach-v2")
+    # parser.add_argument("--env-id", type=str, default="FetchReach-v2")
+    # parser.add_argument("--env-id", type=str, default="FetchPush-v2")
     # parser.add_argument("--env-id", type=str, default="MyFetchRobot/Reach-Jnt-Sparse-v0")
+    # parser.add_argument("--env-id", type=str, default="MyFetchRobot/Slide-Jnt-Sparse-v0")
+    parser.add_argument("--env-id", type=str, default="MyFetchRobot/Push-Jnt-Sparse-v0")
     parser.add_argument("--render", type=bool, default=True)
 
     parser.add_argument("--seed", type=int, default=1)
@@ -59,7 +62,7 @@ def run():
     agent = SAC(
         env=env,
         actor_class=SACActor,
-        critic_class=QNetworkContinuousControlNew,
+        critic_class=QNetworkContinuousControl,
         exp_name=args.exp_name,
         seed=args.seed,
         cuda=args.cuda,
