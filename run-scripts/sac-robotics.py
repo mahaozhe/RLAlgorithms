@@ -2,11 +2,10 @@
 The script to run SAC on continuous control environments.
 """
 import argparse
-import sys_env
 from RLAlgos.SAC import SAC
 
 from Networks.ActorNetworks import SACActor
-from Networks.QValueNetworks import QNetworkContinuousControl, QNetworkContinuousControlNew
+from Networks.QValueNetworks import QNetworkContinuousControl
 
 from utils.env_makers import robotics_env_maker
 from RLEnvs.MyFetchRobot import push, reach, slide
@@ -17,12 +16,10 @@ def parse_args():
 
     parser.add_argument("--exp-name", type=str, default="sac-robotics")
 
-    # parser.add_argument("--env-id", type=str, default="FetchReach-v2")
-    # parser.add_argument("--env-id", type=str, default="FetchPush-v2")
     # parser.add_argument("--env-id", type=str, default="MyFetchRobot/Reach-Jnt-Sparse-v0")
     # parser.add_argument("--env-id", type=str, default="MyFetchRobot/Slide-Jnt-Sparse-v0")
     parser.add_argument("--env-id", type=str, default="MyFetchRobot/Push-Jnt-Sparse-v0")
-    parser.add_argument("--render", type=bool, default=True)
+    parser.add_argument("--render", type=bool, default=False)
 
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--cuda", type=int, default=0)
