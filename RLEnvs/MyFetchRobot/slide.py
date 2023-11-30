@@ -44,7 +44,7 @@ class MujocoFetchSlideEnv(MujocoFetchEnv, EzPickle):
 
 register(
     id="MyFetchRobot/Slide-Jnt-Sparse-v0",
-    entry_point="RLEnvs.MyFetchRobot.reach:MujocoFetchSlideEnv",
+    entry_point="RLEnvs.MyFetchRobot.slide:MujocoFetchSlideEnv",
     kwargs={"reward_type": "sparse"},
     max_episode_steps=200,
 )
