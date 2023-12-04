@@ -207,6 +207,7 @@ class AntEnv(MujocoEnv, utils.EzPickle):
         task="speed",
         tgt_pos_th=0.1,
         tgt_speed_th=0.1,
+        tgt_height_th=0.1,
         **kwargs,
     ):
         ctrl_cost_weight = 0.1
@@ -231,6 +232,7 @@ class AntEnv(MujocoEnv, utils.EzPickle):
         self._tgt_pos = gen_random_point_in_concentric_circles((0, 0), 2, 10)
         self._tgt_pos_th = tgt_pos_th
         self._tgt_speed_th = tgt_speed_th
+        self._tgt_height_th = tgt_height_th
         self._reward_type = reward_type
 
         self._ctrl_cost_weight = ctrl_cost_weight
@@ -320,6 +322,8 @@ class AntEnv(MujocoEnv, utils.EzPickle):
                 rewards = np.abs(x_velocity - self._tgt_speed) < 0.1
             elif self._task == "pos":
                 rewards = np.linalg.norm(xy_position_after - self._tgt_pos) < self._tgt_pos_th
+            elif self._task == "height":
+                rewards = int(xy_position_after[2] >= self._tgt_height_th)
             # costs = ctrl_cost = self.control_cost(action)
             costs = 0
 

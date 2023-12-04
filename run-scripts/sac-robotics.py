@@ -8,7 +8,7 @@ from Networks.ActorNetworks import SACActor
 from Networks.QValueNetworks import QNetworkContinuousControl, QNetworkContinuousControlNew
 from RLAlgos.SAC import SAC
 from RLEnvs.MyFetchRobot import push, reach, slide
-from RLEnvs.Mujoco import ant_v4, humanoid_v4
+from RLEnvs.Mujoco import ant_v4, humanoid_v4, humanoidstandup_v4
 from utils.env_makers import robotics_env_maker
 
 import gymnasium as gym
@@ -25,7 +25,8 @@ def parse_args():
     # parser.add_argument("--env-id", type=str, default="MyFetchRobot/Slide-Jnt-Sparse-v0")
     # parser.add_argument("--env-id", type=str, default="MyFetchRobot/Push-Jnt-Sparse-v0")
     # parser.add_argument("--env-id", type=str, default="Mujoco/Ant-v4-Sparse")
-    parser.add_argument("--env-id", type=str, default="Mujoco/Humanoid-v4-Sparse")
+    # parser.add_argument("--env-id", type=str, default="Mujoco/Humanoid-v4-Sparse")
+    parser.add_argument("--env-id", type=str, default="Mujoco/HumanoidStandup-v4-Sparse")
 
     parser.add_argument("--render", type=bool, default=True)
 
@@ -65,15 +66,20 @@ def run():
     # env = robotics_env_maker(env_id=args.env_id, seed=args.seed, render=args.render)
 
     # for ant_v4
-    # env = robotics_env_maker(env_id=args.env_id, seed=args.seed, render=args.render,reward_type="sparse", task="speed", tgt_speed_th=0.1)
+    env = robotics_env_maker(
+        env_id=args.env_id, seed=args.seed, render=args.render, reward_type="sparse", task="speed", tgt_speed_th=0.1
+    )
+    # env = robotics_env_maker(
+    #     env_id=args.env_id, seed=args.seed, render=args.render, reward_type="sparse", task="height", tgt_height_th=0.1
+    # )
     # env = robotics_env_maker(
     #     env_id=args.env_id, seed=args.seed, render=args.render, reward_type="sparse", task="pos", tgt_speed_th=0.1
     # )
 
     # for humanoid_v4
-    env = robotics_env_maker(
-        env_id=args.env_id, seed=args.seed, render=args.render, reward_type="sparse", height_th=1.0
-    )
+    # env = robotics_env_maker(
+    #     env_id=args.env_id, seed=args.seed, render=args.render, reward_type="sparse", height_th=0.6
+    # )
 
     agent = SAC(
         env=env,
