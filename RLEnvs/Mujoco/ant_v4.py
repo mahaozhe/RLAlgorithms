@@ -8,7 +8,8 @@ DEFAULT_CAMERA_CONFIG = {
 }
 
 
-def gen_random_point_in_concentric_circles(center, min_radius, max_radius):
+def gen_rand_point_within(center, min_radius, max_radius):
+    """generate a random point within a concentric circle"""
     radius = np.random.uniform(min_radius, max_radius)
 
     angle = np.random.uniform(0, np.pi * 2)
@@ -17,6 +18,14 @@ def gen_random_point_in_concentric_circles(center, min_radius, max_radius):
     y = center[1] + radius * np.sin(angle)
 
     return x, y
+
+
+def gen_rand_num_within(a, b):
+    """generate a random number within [a, b] union [-b, -a]"""
+    r = np.random.uniform(a, b)
+    if np.random.random() < 0.5:
+        r = -r
+    return r
 
 
 class AntEnv(MujocoEnv, utils.EzPickle):
@@ -229,7 +238,7 @@ class AntEnv(MujocoEnv, utils.EzPickle):
         # new added
         self._task = task
         self._tgt_speed = np.random.uniform(-2, 2)
-        self._tgt_pos = gen_random_point_in_concentric_circles((0, 0), 2, 10)
+        self._tgt_pos = gen_rand_point_within((0, 0), 2, 10)
         self._tgt_pos_th = tgt_pos_th
         self._tgt_speed_th = tgt_speed_th
         self._tgt_height_th = tgt_height_th
@@ -319,13 +328,14 @@ class AntEnv(MujocoEnv, utils.EzPickle):
             costs = ctrl_cost
         elif self._reward_type == "sparse":
             if self._task == "speed":
-                rewards = np.abs(x_velocity - self._tgt_speed) < 0.1
+                rewards = (np.abs(x_velocity - self._tgt_speed) < 0.1) -1
             elif self._task == "pos":
-                rewards = np.linalg.norm(xy_position_after - self._tgt_pos) < self._tgt_pos_th
+                rewards = (np.linalg.norm(xy_position_after - self._tgt_pos) < self._tgt_pos_th) -1
             elif self._task == "height":
-                rewards = int(xy_position_after[2] >= self._tgt_height_th)
+                rewards = int(xy_position_after[2] >= self._tgt_height_th) - 1  # {-1,0}
             # costs = ctrl_cost = self.control_cost(action)
             costs = 0
+        print(f"==>> rewards: {rewards}")
 
         info = {
             "reward_forward": forward_reward,
@@ -364,8 +374,10 @@ class AntEnv(MujocoEnv, utils.EzPickle):
             obs = np.concatenate((position, velocity))
         return {
             "observation": obs.copy(),
-            "achieved_goal": np.zeros(0),
-            "desired_goal": np.zeros(0),
+            "achieved_goal": np.array([velocity[13]])
+            if self._task == "speed"
+            else np.array([position[1], position[2]]),
+            "desired_goal": np.array([self._tgt_speed]) if self._task == "speed" else np.array([self._tgt_pos]),
         }
 
     def reset_model(self):
@@ -380,9 +392,9 @@ class AntEnv(MujocoEnv, utils.EzPickle):
 
         # initial target point should be within a fan-shaped area
         if self._task == "pos":
-            self._tgt_pos = gen_random_point_in_concentric_circles((0, 0), 1, 5)
+            self._tgt_pos = gen_rand_point_within((0, 0), 1, 5)
         if self._task == "speed":
-            self._tgt_speed = np.random.uniform(-2, 2)
+            self._tgt_speed = gen_rand_num_within(1, 10)
         return observation
 
     def viewer_setup(self):

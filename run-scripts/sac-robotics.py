@@ -24,9 +24,9 @@ def parse_args():
     # parser.add_argument("--env-id", type=str, default="MyFetchRobot/Reach-Jnt-Sparse-v0")
     # parser.add_argument("--env-id", type=str, default="MyFetchRobot/Slide-Jnt-Sparse-v0")
     # parser.add_argument("--env-id", type=str, default="MyFetchRobot/Push-Jnt-Sparse-v0")
-    # parser.add_argument("--env-id", type=str, default="Mujoco/Ant-v4-Sparse")
+    parser.add_argument("--env-id", type=str, default="Mujoco/Ant-v4-Sparse")
     # parser.add_argument("--env-id", type=str, default="Mujoco/Humanoid-v4-Sparse")
-    parser.add_argument("--env-id", type=str, default="Mujoco/HumanoidStandup-v4-Sparse")
+    # parser.add_argument("--env-id", type=str, default="Mujoco/HumanoidStandup-v4-Sparse")
 
     parser.add_argument("--render", type=bool, default=True)
 
