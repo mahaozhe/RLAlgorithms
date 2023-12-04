@@ -11,7 +11,7 @@ from typing import Union
 
 import numpy as np
 
-from gymnasium_robotics.envs.robot_env import MujocoPyRobotEnv, MujocoRobotEnv
+from gymnasium_robotics.envs.robot_env import MujocoRobotEnv
 from gymnasium_robotics.utils import rotations
 
 DEFAULT_CAMERA_CONFIG = {
@@ -27,7 +27,7 @@ def goal_distance(goal_a, goal_b):
     return np.linalg.norm(goal_a - goal_b, axis=-1)
 
 
-def get_base_fetch_env(RobotEnvClass: Union[MujocoPyRobotEnv, MujocoRobotEnv]):
+def get_base_fetch_env(RobotEnvClass: MujocoRobotEnv):
     """Factory function that returns a BaseFetchEnv class that inherits
     from MujocoPyRobotEnv or MujocoRobotEnv depending on the mujoco python bindings.
     """
@@ -299,7 +299,7 @@ class MujocoFetchEnv(get_base_fetch_env(MujocoRobotEnv)):
         # Randomize start position of object.
         if self.has_object:
             object_xpos = self.initial_gripper_xpos[:2]
-            while np.linalg.norm(object_xpos - self.initial_gripper_xpos[:2]) < 0.1:
+            while np.linalg.norm(object_xpos - self.initial_gripper_xpos[:2]) < 0.2:
                 object_xpos = self.initial_gripper_xpos[:2] + self.np_random.uniform(
                     -self.obj_range, self.obj_range, size=2
                 )
