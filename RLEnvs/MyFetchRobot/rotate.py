@@ -2,15 +2,14 @@ import os
 
 from gymnasium.utils.ezpickle import EzPickle
 from gymnasium.envs.registration import register
-
-# from .FetchEnv import MujocoFetchEnv
+import numpy as np
 from RLEnvs.MyFetchRobot.FetchEnv import MujocoFetchEnv
 
 # Ensure we get the path separator correct on windows
 MODEL_XML_PATH = os.path.join("fetch", "push.xml")
 
 
-class MujocoFetchPushEnv(MujocoFetchEnv, EzPickle):
+class MujocoFetchRotateEnv(MujocoFetchEnv, EzPickle):
     """
     ## Description
     """
@@ -26,24 +25,24 @@ class MujocoFetchPushEnv(MujocoFetchEnv, EzPickle):
             self,
             model_path=MODEL_XML_PATH,
             has_object=True,
-            block_gripper=True,
+            block_gripper=False,
             n_substeps=20,
             gripper_extra_height=0.0,
             target_in_the_air=False,
             target_offset=0.0,
             obj_range=0.15,
             target_range=0.15,
-            distance_threshold=0.05,
+            distance_threshold=0.2,
             initial_qpos=initial_qpos,
             reward_type=reward_type,
+            goal_type="rot",
             **kwargs,
         )
         EzPickle.__init__(self, reward_type=reward_type, **kwargs)
 
 
 register(
-    id="MyFetchRobot/Push-Jnt-v0",
-    entry_point="RLEnvs.MyFetchRobot.push:MujocoFetchPushEnv",
-    # kwargs={"reward_type": "sparse"},
+    id="MyFetchRobot/Rotate-v0",
+    entry_point="RLEnvs.MyFetchRobot.rotate:MujocoFetchRotateEnv",
     max_episode_steps=200,
 )

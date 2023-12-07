@@ -10,9 +10,10 @@
 from typing import Union
 
 import numpy as np
-
+from scipy.spatial.transform import Rotation
 from gymnasium_robotics.envs.robot_env import MujocoRobotEnv
 from gymnasium_robotics.utils import rotations
+import transformations as tft
 
 DEFAULT_CAMERA_CONFIG = {
     "distance": 2.5,
@@ -22,9 +23,16 @@ DEFAULT_CAMERA_CONFIG = {
 }
 
 
-def goal_distance(goal_a, goal_b):
+def goal_distance(goal_a, goal_b, goal_type="pos"):
     assert goal_a.shape == goal_b.shape
-    return np.linalg.norm(goal_a - goal_b, axis=-1)
+    pos_dis = np.linalg.norm(goal_a - goal_b, axis=-1)
+    if goal_type == "rot":
+        quat_diff = tft.quaternion_multiply(goal_b, tft.quaternion_conjugate(goal_a))
+        yaw_diff = tft.euler_from_quaternion(quat_diff)[2]
+        rot_dis = np.abs(yaw_diff)
+        return pos_dis + rot_dis
+    elif goal_type == "pos":
+        return pos_dis
 
 
 def get_base_fetch_env(RobotEnvClass: MujocoRobotEnv):
@@ -46,6 +54,7 @@ def get_base_fetch_env(RobotEnvClass: MujocoRobotEnv):
             target_range,
             distance_threshold,
             reward_type,
+            goal_type="pos",  # "pos" or "rot"
             **kwargs
         ):
             """Initializes a new Fetch environment.
@@ -64,6 +73,8 @@ def get_base_fetch_env(RobotEnvClass: MujocoRobotEnv):
                 initial_qpos (dict): a dictionary of joint names and values that define the initial configuration
                 reward_type ('sparse' or 'dense'): the reward type, i.e. sparse or dense
             """
+
+            self.goal_type = goal_type
 
             self.gripper_extra_height = gripper_extra_height
             self.block_gripper = block_gripper
@@ -88,7 +99,7 @@ def get_base_fetch_env(RobotEnvClass: MujocoRobotEnv):
 
         def compute_reward(self, achieved_goal, goal, info):
             # Compute distance between goal and the achieved goal.
-            d = goal_distance(achieved_goal, goal)
+            d = goal_distance(achieved_goal, goal, self.goal_type)
             if self.reward_type == "sparse":
                 return -(d > self.distance_threshold).astype(np.float32)
             else:
@@ -133,7 +144,7 @@ def get_base_fetch_env(RobotEnvClass: MujocoRobotEnv):
                     object_velr,
                     grip_velp,
                     gripper_vel,
-                ) = self.generate_mujoco_observations()
+                ) = self.generate_mujoco_observations(rot_type="euler" if self.goal_type == "pos" else "quat")
             else:
                 (
                     grip_pos,
@@ -147,12 +158,15 @@ def get_base_fetch_env(RobotEnvClass: MujocoRobotEnv):
                     gripper_vel,
                     joint_pos,
                     joint_vel,
-                ) = self.generate_mujoco_observations()
+                ) = self.generate_mujoco_observations(rot_type="euler" if self.goal_type == "pos" else "quat")
 
             if not self.has_object:
                 achieved_goal = grip_pos.copy()
             else:
-                achieved_goal = np.squeeze(object_pos.copy())
+                if self.goal_type == "pos":
+                    achieved_goal = np.squeeze(object_pos.copy())
+                elif self.goal_type == "rot":
+                    achieved_goal = np.squeeze(np.concatenate([object_pos.copy(), object_rot.copy()]))
 
             obs = np.concatenate(
                 [
@@ -191,6 +205,10 @@ def get_base_fetch_env(RobotEnvClass: MujocoRobotEnv):
                 goal[2] = self.height_offset
                 if self.target_in_the_air and self.np_random.uniform() < 0.5:
                     goal[2] += self.np_random.uniform(0, 0.45)
+                if self.goal_type == "rot":
+                    rand_yaw = self.np_random.uniform(0, 2 * np.pi)
+                    quat = tft.quaternion_from_euler(0, 0, rand_yaw)
+                    goal = np.concatenate([goal, quat])
             else:
                 goal = self.initial_gripper_xpos[:3] + self.np_random.uniform(
                     -self.target_range, self.target_range, size=3
@@ -198,7 +216,7 @@ def get_base_fetch_env(RobotEnvClass: MujocoRobotEnv):
             return goal.copy()
 
         def _is_success(self, achieved_goal, desired_goal):
-            d = goal_distance(achieved_goal, desired_goal)
+            d = goal_distance(achieved_goal, desired_goal, self.goal_type)
             return (d < self.distance_threshold).astype(np.float32)
 
     return BaseFetchEnv
@@ -221,7 +239,7 @@ class MujocoFetchEnv(get_base_fetch_env(MujocoRobotEnv)):
         self._utils.ctrl_set_action(self.model, self.data, action)
         self._utils.mocap_set_action(self.model, self.data, action)
 
-    def generate_mujoco_observations(self):
+    def generate_mujoco_observations(self, rot_type="euler"):
         grip_pos = self._utils.get_site_xpos(self.model, self.data, "robot0:grip")
 
         dt = self.n_substeps * self.model.opt.timestep
@@ -246,12 +264,16 @@ class MujocoFetchEnv(get_base_fetch_env(MujocoRobotEnv)):
         robot_qpos, robot_qvel = self._utils.robot_get_obs(self.model, self.data, self._model_names.joint_names)
         if self.has_object:
             object_pos = self._utils.get_site_xpos(self.model, self.data, "object0")
-            # rotations
-            object_rot = rotations.mat2euler(self._utils.get_site_xmat(self.model, self.data, "object0"))
-            # velocities
+            if rot_type == "euler":
+                object_rot = rotations.mat2euler(self._utils.get_site_xmat(self.model, self.data, "object0"))
+            elif rot_type == "quat":
+                m = self._utils.get_site_xmat(self.model, self.data, "object0")
+                rot_mat = np.zeros((4, 4))
+                rot_mat[:3, :3] = m
+                rot_mat[3, 3] = 1
+                object_rot = tft.quaternion_from_matrix(rot_mat)
             object_velp = self._utils.get_site_xvelp(self.model, self.data, "object0") * dt
             object_velr = self._utils.get_site_xvelr(self.model, self.data, "object0") * dt  # rotational velocity
-            # gripper state
             object_rel_pos = object_pos - grip_pos
             object_velp -= grip_velp
         else:
@@ -284,9 +306,10 @@ class MujocoFetchEnv(get_base_fetch_env(MujocoRobotEnv)):
 
     def _render_callback(self):
         # Visualize target.
+        """site include robot0:grip, target0 and object0"""
         sites_offset = (self.data.site_xpos - self.model.site_pos).copy()
         site_id = self._mujoco.mj_name2id(self.model, self._mujoco.mjtObj.mjOBJ_SITE, "target0")
-        self.model.site_pos[site_id] = self.goal - sites_offset[0]
+        self.model.site_pos[site_id] = self.goal[:3] - sites_offset[0]
         self._mujoco.mj_forward(self.model, self.data)
 
     def _reset_sim(self):
@@ -306,6 +329,10 @@ class MujocoFetchEnv(get_base_fetch_env(MujocoRobotEnv)):
             object_qpos = self._utils.get_joint_qpos(self.model, self.data, "object0:joint")
             assert object_qpos.shape == (7,)
             object_qpos[:2] = object_xpos
+            if self.goal_type == "rot":
+                rand_yaw = self.np_random.uniform(0, 2 * np.pi)
+                quat = tft.quaternion_from_euler(0, 0, rand_yaw)
+                object_qpos[3:] = quat
             self._utils.set_joint_qpos(self.model, self.data, "object0:joint", object_qpos)
 
         self._mujoco.mj_forward(self.model, self.data)

@@ -155,7 +155,7 @@ class SAC:
         self.save_folder = save_folder
         os.makedirs(self.save_folder, exist_ok=True)
 
-    def learn(self, total_timesteps=1000000, learning_starts=5000):
+    def learn(self, total_timesteps=1000000, learning_starts=5000, debug=True):
         obs, _ = self.env.reset()
 
         for global_step in range(total_timesteps):
@@ -171,7 +171,8 @@ class SAC:
             done = terminated or truncated
 
             if "episode" in info:
-                print(f"global_step={global_step}, episodic_return={info['episode']['r']}")
+                if debug:
+                    print(f"global_step={global_step}, episodic_return={info['episode']['r']}")
                 self.writer.add_scalar("charts/episodic_return", info["episode"]["r"], global_step)
                 self.writer.add_scalar("charts/episodic_length", info["episode"]["l"], global_step)
 
