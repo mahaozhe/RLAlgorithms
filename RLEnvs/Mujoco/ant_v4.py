@@ -182,24 +182,24 @@ class AntEnv(MujocoEnv, utils.EzPickle):
     }
 
     def __init__(
-        self,
-        xml_file="ant.xml",
-        ctrl_cost_weight=0.5,
-        use_contact_forces=False,
-        contact_cost_weight=5e-4,
-        healthy_reward=1.0,
-        terminate_when_unhealthy=True,
-        healthy_z_range=(0.2, 1.0),
-        contact_force_range=(-1.0, 1.0),
-        reset_noise_scale=0.1,
-        exclude_current_positions_from_observation=True,
-        reward_type="sparse",
-        task="speed",
-        goal_dist_th=0.1,
-        tgt_height=0.6,
-        tgt_speed=1,
-        random_tgt=False,
-        **kwargs,
+            self,
+            xml_file="ant.xml",
+            ctrl_cost_weight=0.5,
+            use_contact_forces=False,
+            contact_cost_weight=5e-4,
+            healthy_reward=1.0,
+            terminate_when_unhealthy=True,
+            healthy_z_range=(0.2, 1.0),
+            contact_force_range=(-1.0, 1.0),
+            reset_noise_scale=0.1,
+            exclude_current_positions_from_observation=True,
+            reward_type="sparse",
+            task="speed",
+            goal_dist_th=0.1,
+            tgt_height=0.6,
+            tgt_speed=1,
+            random_tgt=False,
+            **kwargs,
     ):
         ctrl_cost_weight = 0.1
         utils.EzPickle.__init__(
@@ -356,13 +356,13 @@ class AntEnv(MujocoEnv, utils.EzPickle):
 
         if self._task == "speed":
             achieved_goal = np.array([velocity[13]])
-            desired_goal = np.array(self._tgt_speed)
+            desired_goal = np.array([self._tgt_speed])
         elif self._task == "pos":
             achieved_goal = np.array([position[1], position[2]])
             desired_goal = np.array(self._tgt_pos)
         elif self._task == "height":
             achieved_goal = np.array([position[2]])
-            desired_goal = np.array(self._tgt_height)
+            desired_goal = np.array([self._tgt_height])
         return {
             "observation": obs.copy(),
             "achieved_goal": achieved_goal.copy(),
@@ -400,4 +400,18 @@ register(
     id="Mujoco/Ant-v4-Sparse",
     entry_point="RLEnvs.Mujoco.ant_v4:AntEnv",
     max_episode_steps=200,
+)
+
+register(
+    id="Mujoco/Ant-Speed-v4-Sparse",
+    entry_point="RLEnvs.Mujoco.ant_v4:AntEnv",
+    max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "task": "speed", "goal_dist_th": 0.1},
+)
+
+register(
+    id="Mujoco/Ant-Reach-v4-Sparse",
+    entry_point="RLEnvs.Mujoco.ant_v4:AntEnv",
+    max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "task": "pos", "goal_dist_th": 0.1},
 )

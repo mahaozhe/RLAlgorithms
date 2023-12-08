@@ -42,7 +42,7 @@ class MujocoFetchRotateEnv(MujocoFetchEnv, EzPickle):
 
 
 register(
-    id="MyFetchRobot/Rotate-v0",
+    id="MyFetchRobot/Rotate-Jnt-Sparse-v0",
     entry_point="RLEnvs.MyFetchRobot.rotate:MujocoFetchRotateEnv",
     max_episode_steps=200,
 )

@@ -232,7 +232,7 @@ class HumanoidStandupEnv(MujocoEnv, utils.EzPickle):
         if self._reward_type == "dense":
             reward = uph_cost - quad_ctrl_cost - quad_impact_cost + 1
         elif self._reward_type == "sparse":
-            reward = int(pos_after >= self._height_th)
+            reward = int(pos_after >= self._height_th) - 1
 
         if self.render_mode == "human":
             self.render()
@@ -270,7 +270,29 @@ class HumanoidStandupEnv(MujocoEnv, utils.EzPickle):
 
 
 register(
-    id="Mujoco/HumanoidStandup-v4-Sparse",
+    id="Mujoco/HumanoidStandup-Height06-v4-Sparse",
     entry_point="RLEnvs.Mujoco.humanoidstandup_v4:HumanoidStandupEnv",
     max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "height_th": 0.6},
+)
+
+register(
+    id="Mujoco/HumanoidStandup-Height05-v4-Sparse",
+    entry_point="RLEnvs.Mujoco.humanoidstandup_v4:HumanoidStandupEnv",
+    max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "height_th": 0.5},
+)
+
+register(
+    id="Mujoco/HumanoidStandup-Height04-v4-Sparse",
+    entry_point="RLEnvs.Mujoco.humanoidstandup_v4:HumanoidStandupEnv",
+    max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "height_th": 0.4},
+)
+
+register(
+    id="Mujoco/HumanoidStandup-Height03-v4-Sparse",
+    entry_point="RLEnvs.Mujoco.humanoidstandup_v4:HumanoidStandupEnv",
+    max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "height_th": 0.3},
 )
