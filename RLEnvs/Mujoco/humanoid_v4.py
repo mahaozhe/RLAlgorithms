@@ -230,7 +230,7 @@ class HumanoidEnv(MujocoEnv, utils.EzPickle):
         reset_noise_scale=1e-2,
         exclude_current_positions_from_observation=True,
         reward_type="sparse",
-        height_th=0.6,
+        height_th=1.3,
         **kwargs
     ):
         utils.EzPickle.__init__(
@@ -338,7 +338,7 @@ class HumanoidEnv(MujocoEnv, utils.EzPickle):
             rewards = forward_reward + healthy_reward
             ctrl_cost = self.control_cost(action)
         elif self._reward_type == "sparse":
-            rewards = int(abs(xy_position_after[0]) >= self._height_th) - 1
+            rewards = int(observation["observation"][0] >= self._height_th) - 1
             ctrl_cost = 0
 
         reward = rewards - ctrl_cost

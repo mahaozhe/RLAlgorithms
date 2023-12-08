@@ -182,24 +182,24 @@ class AntEnv(MujocoEnv, utils.EzPickle):
     }
 
     def __init__(
-            self,
-            xml_file="ant.xml",
-            ctrl_cost_weight=0.5,
-            use_contact_forces=False,
-            contact_cost_weight=5e-4,
-            healthy_reward=1.0,
-            terminate_when_unhealthy=True,
-            healthy_z_range=(0.2, 1.0),
-            contact_force_range=(-1.0, 1.0),
-            reset_noise_scale=0.1,
-            exclude_current_positions_from_observation=True,
-            reward_type="sparse",
-            task="speed",
-            goal_dist_th=0.1,
-            tgt_height=0.6,
-            tgt_speed=1,
-            random_tgt=False,
-            **kwargs,
+        self,
+        xml_file="ant.xml",
+        ctrl_cost_weight=0.5,
+        use_contact_forces=False,
+        contact_cost_weight=5e-4,
+        healthy_reward=1.0,
+        terminate_when_unhealthy=True,
+        healthy_z_range=(0.2, 1.0),
+        contact_force_range=(-1.0, 1.0),
+        reset_noise_scale=0.1,
+        exclude_current_positions_from_observation=True,
+        reward_type="sparse",
+        task="speed",
+        goal_dist_th=0.1,
+        tgt_height=0.6,
+        tgt_speed=1,
+        random_tgt=False,
+        **kwargs,
     ):
         ctrl_cost_weight = 0.1
         utils.EzPickle.__init__(
@@ -314,7 +314,7 @@ class AntEnv(MujocoEnv, utils.EzPickle):
             elif self._task == "pos":
                 rewards = (np.linalg.norm(xy_position_after - self._tgt_pos) < self._goal_dist_th) - 1
             elif self._task == "height":
-                rewards = int(xy_position_after[2] >= self._tgt_height) - 1  # {-1,0}
+                rewards = int(observation['observation'][0] >= self._tgt_height) - 1  # {-1,0}
             # costs = ctrl_cost = self.control_cost(action)
             costs = 0
 
