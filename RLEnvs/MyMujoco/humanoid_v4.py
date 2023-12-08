@@ -221,17 +221,17 @@ class HumanoidEnv(MujocoEnv, utils.EzPickle):
     }
 
     def __init__(
-        self,
-        forward_reward_weight=1.25,
-        ctrl_cost_weight=0.1,
-        healthy_reward=5.0,
-        terminate_when_unhealthy=True,
-        healthy_z_range=(1.0, 2.0),
-        reset_noise_scale=1e-2,
-        exclude_current_positions_from_observation=True,
-        reward_type="sparse",
-        height_th=0.6,
-        **kwargs
+            self,
+            forward_reward_weight=1.25,
+            ctrl_cost_weight=0.1,
+            healthy_reward=5.0,
+            terminate_when_unhealthy=True,
+            healthy_z_range=(1.0, 2.0),
+            reset_noise_scale=1e-2,
+            exclude_current_positions_from_observation=True,
+            reward_type="sparse",
+            height_th=1.3,
+            **kwargs
     ):
         utils.EzPickle.__init__(
             self,
@@ -246,7 +246,7 @@ class HumanoidEnv(MujocoEnv, utils.EzPickle):
         )
         self._reward_type = reward_type
         self._height_th = height_th
-        
+
         self._forward_reward_weight = forward_reward_weight
         self._ctrl_cost_weight = ctrl_cost_weight
         self._healthy_reward = healthy_reward
@@ -338,7 +338,7 @@ class HumanoidEnv(MujocoEnv, utils.EzPickle):
             rewards = forward_reward + healthy_reward
             ctrl_cost = self.control_cost(action)
         elif self._reward_type == "sparse":
-            rewards = int(abs(xy_position_after[0]) >= self._height_th)
+            rewards = int(observation["observation"][0] >= self._height_th) - 1
             ctrl_cost = 0
 
         reward = rewards - ctrl_cost
@@ -380,7 +380,22 @@ class HumanoidEnv(MujocoEnv, utils.EzPickle):
 
 
 register(
-    id="Mujoco/Humanoid-v4-Sparse",
+    id="Mujoco/Humanoid-Keep13-v4-Sparse",
     entry_point="RLEnvs.Mujoco.humanoid_v4:HumanoidEnv",
     max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "height_th": 1.3},
+)
+
+register(
+    id="Mujoco/Humanoid-Keep14-v4-Sparse",
+    entry_point="RLEnvs.Mujoco.humanoid_v4:HumanoidEnv",
+    max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "height_th": 1.4},
+)
+
+register(
+    id="Mujoco/Humanoid-Keep15-v4-Sparse",
+    entry_point="RLEnvs.Mujoco.humanoid_v4:HumanoidEnv",
+    max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "height_th": 1.5},
 )
