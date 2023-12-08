@@ -397,9 +397,17 @@ class AntEnv(MujocoEnv, utils.EzPickle):
 
 
 register(
-    id="Mujoco/Ant-v4-Sparse",
+    id="Mujoco/Ant-Height08-v4-Sparse",
     entry_point="RLEnvs.Mujoco.ant_v4:AntEnv",
     max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "task": "height", "goal_dist_th": 0.05, "tgt_height": 0.8},
+)
+
+register(
+    id="Mujoco/Ant-Height10-v4-Sparse",
+    entry_point="RLEnvs.Mujoco.ant_v4:AntEnv",
+    max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "task": "height", "goal_dist_th": 0.05, "tgt_height": 1.0},
 )
 
 register(

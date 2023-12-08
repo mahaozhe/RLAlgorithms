@@ -36,27 +36,27 @@ class SAC:
     """
 
     def __init__(
-        self,
-        env,
-        actor_class,
-        critic_class,
-        exp_name="sac",
-        seed=1,
-        cuda=0,
-        gamma=0.99,
-        buffer_size=1000000,
-        rb_optimize_memory=False,
-        batch_size=256,
-        policy_lr=3e-4,
-        q_lr=1e-3,
-        alpha_lr=1e-4,
-        target_network_frequency=1,
-        tau=0.005,
-        policy_frequency=2,
-        alpha=0.2,
-        alpha_autotune=True,
-        write_frequency=100,
-        save_folder="./sac/",
+            self,
+            env,
+            actor_class,
+            critic_class,
+            exp_name="sac",
+            seed=1,
+            cuda=0,
+            gamma=0.99,
+            buffer_size=1000000,
+            rb_optimize_memory=False,
+            batch_size=256,
+            policy_lr=3e-4,
+            q_lr=1e-3,
+            alpha_lr=1e-4,
+            target_network_frequency=1,
+            tau=0.005,
+            policy_frequency=2,
+            alpha=0.2,
+            alpha_autotune=True,
+            write_frequency=100,
+            save_folder="./sac/",
     ):
         """
         Initialize the SAC algorithm.
@@ -155,7 +155,7 @@ class SAC:
         self.save_folder = save_folder
         os.makedirs(self.save_folder, exist_ok=True)
 
-    def learn(self, total_timesteps=1000000, learning_starts=5000, debug=True):
+    def learn(self, total_timesteps=1000000, learning_starts=5000):
         obs, _ = self.env.reset()
 
         for global_step in range(total_timesteps):
@@ -171,8 +171,7 @@ class SAC:
             done = terminated or truncated
 
             if "episode" in info:
-                if debug:
-                    print(f"global_step={global_step}, episodic_return={info['episode']['r']}")
+                print(f"global_step={global_step}, episodic_return={info['episode']['r']}")
                 self.writer.add_scalar("charts/episodic_return", info["episode"]["r"], global_step)
                 self.writer.add_scalar("charts/episodic_length", info["episode"]["l"], global_step)
 
@@ -312,29 +311,29 @@ class SAC_Atari(SAC):
     """
 
     def __init__(
-        self,
-        env,
-        actor_class,
-        critic_class,
-        exp_name="sac-atari",
-        seed=1,
-        cuda=0,
-        gamma=0.99,
-        buffer_size=1000000,
-        rb_optimize_memory=False,
-        batch_size=256,
-        policy_lr=3e-4,
-        q_lr=3e-4,
-        eps=1e-4,
-        alpha_lr=1e-4,
-        target_network_frequency=8000,
-        tau=1,
-        policy_frequency=4,
-        alpha=0.2,
-        alpha_autotune=True,
-        target_entropy_scale=0.89,
-        write_frequency=100,
-        save_folder="./sac/",
+            self,
+            env,
+            actor_class,
+            critic_class,
+            exp_name="sac-atari",
+            seed=1,
+            cuda=0,
+            gamma=0.99,
+            buffer_size=1000000,
+            rb_optimize_memory=False,
+            batch_size=256,
+            policy_lr=3e-4,
+            q_lr=3e-4,
+            eps=1e-4,
+            alpha_lr=1e-4,
+            target_network_frequency=8000,
+            tau=1,
+            policy_frequency=4,
+            alpha=0.2,
+            alpha_autotune=True,
+            target_entropy_scale=0.89,
+            write_frequency=100,
+            save_folder="./sac/",
     ):
         """
         Initialize the SAC algorithm.
@@ -401,7 +400,7 @@ class SAC_Atari(SAC):
                 qf_2_next_target = self.qf_2_target(data.next_observations)
                 # we can use the action probabilities instead of MC sampling to estimate the expectation
                 min_qf_next_target = next_state_action_probs * (
-                    torch.min(qf_1_next_target, qf_2_next_target) - self.alpha * next_state_log_pi
+                        torch.min(qf_1_next_target, qf_2_next_target) - self.alpha * next_state_log_pi
                 )
                 min_qf_next_target = min_qf_next_target.sum(dim=1)
                 next_q_value = data.rewards.flatten() + (1 - data.dones.flatten()) * self.gamma * (min_qf_next_target)
@@ -434,7 +433,7 @@ class SAC_Atari(SAC):
             if self.alpha_autotune:
                 # re-use action probabilities for temperature loss
                 alpha_loss = (
-                    action_probs.detach() * (-self.log_alpha.exp() * (log_pi + self.target_entropy).detach())
+                        action_probs.detach() * (-self.log_alpha.exp() * (log_pi + self.target_entropy).detach())
                 ).mean()
 
                 self.alpha_optimizer.zero_grad()

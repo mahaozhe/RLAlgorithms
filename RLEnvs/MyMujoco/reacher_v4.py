@@ -156,7 +156,6 @@ class ReacherEnv(MujocoEnv, utils.EzPickle):
         self.do_simulation(a, self.frame_skip)
         if self.render_mode == "human":
             self.render()
-        print(f"reward: {reward}")
 
         ob = self._get_obs()
         return (ob, reward, False, False, dict(reward_dist=reward_dist, reward_ctrl=reward_ctrl))
@@ -198,7 +197,8 @@ class ReacherEnv(MujocoEnv, utils.EzPickle):
 
 
 register(
-    id="Mujoco/Reacher-v4",
+    id="Mujoco/Reacher-v4-Sparse",
     entry_point="RLEnvs.Mujoco.reacher_v4:ReacherEnv",
     max_episode_steps=200,
+    kwargs={"reward_type": "sparse"},
 )

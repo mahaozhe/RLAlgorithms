@@ -67,10 +67,12 @@ def mujoco_env_maker(env_id, gamma, seed=1, render=False):
 
 
 def robotics_env_maker(env_id, seed=1, render=False, **kwargs):
-    if kwargs is None:
-        env = gym.make(env_id) if not render else gym.make(env_id, render_mode="human")
-    else:
-        env = gym.make(env_id, **kwargs) if not render else gym.make(env_id, render_mode="human", **kwargs)
+    env = gym.make(env_id) if not render else gym.make(env_id, render_mode="human")
+
+    # if kwargs is None:
+    #     env = gym.make(env_id) if not render else gym.make(env_id, render_mode="human")
+    # else:
+    #     env = gym.make(env_id, **kwargs) if not render else gym.make(env_id, render_mode="human", **kwargs)
 
     env.action_space.seed(seed)
     env.observation_space.seed(seed)
@@ -83,9 +85,9 @@ def robotics_env_maker(env_id, seed=1, render=False, **kwargs):
     )
 
     new_obs_length = (
-        env.observation_space["observation"].shape[0]
-        + env.observation_space["achieved_goal"].shape[0]
-        + env.observation_space["desired_goal"].shape[0]
+            env.observation_space["observation"].shape[0]
+            + env.observation_space["achieved_goal"].shape[0]
+            + env.observation_space["desired_goal"].shape[0]
     )
 
     # redefine the observation of the environment, make it the same size of the flattened dict observation space

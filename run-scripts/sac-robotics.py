@@ -5,28 +5,21 @@ import argparse
 
 import sys_env
 from Networks.ActorNetworks import SACActor
-from Networks.QValueNetworks import QNetworkContinuousControl, QNetworkContinuousControlNew
+from Networks.QValueNetworks import QNetworkContinuousControl
 from RLAlgos.SAC import SAC
 from RLEnvs.MyFetchRobot import push, reach, slide, rotate
-from RLEnvs.Mujoco import ant_v4, humanoid_v4, humanoidstandup_v4, reacher_v4, hopper_v4, walker2d_v4
+from RLEnvs.MyMujoco import ant_v4, humanoid_v4, humanoidstandup_v4, reacher_v4, hopper_v4, walker2d_v4
 from utils.env_makers import robotics_env_maker
 
 import gymnasium as gym
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Run SAC on robotics environments.")
+    parser = argparse.ArgumentParser(description="Run SAC on robotics or mujoco environments.")
 
     parser.add_argument("--exp-name", type=str, default="sac-robotics")
 
-    # parser.add_argument("--env-id", type=str, default="FetchReach-v2")
-    # parser.add_argument("--env-id", type=str, default="FetchPush-v2")
-    # parser.add_argument("--env-id", type=str, default="MyFetchRobot/Reach-Jnt-Sparse-v0")
-    # parser.add_argument("--env-id", type=str, default="MyFetchRobot/Slide-Jnt-Sparse-v0")
-    # parser.add_argument("--env-id", type=str, default="MyFetchRobot/Push-Jnt-Sparse-v0")
-    # parser.add_argument("--env-id", type=str, default="Mujoco/Ant-v4-Sparse")
-    # parser.add_argument("--env-id", type=str, default="Mujoco/Humanoid-v4-Sparse")
-    # parser.add_argument("--env-id", type=str, default="Mujoco/HumanoidStandup-v4-Sparse")
+    parser.add_argument("--env-id", type=str, default="FetchReach-v2")
 
     parser.add_argument("--render", type=bool, default=True)
 
@@ -62,29 +55,8 @@ def parse_args():
 
 def run():
     args = parse_args()
-    # for fetch
-    # env = robotics_env_maker(env_id=args.env_id, seed=args.seed, render=args.render)
 
-    # for ant_v4
-    # env = robotics_env_maker(
-    #     env_id=args.env_id, seed=args.seed, render=args.render, reward_type="sparse", task="speed", goal_dist_th=0.1
-    # )
-
-    # for humanoid_v4
-    # env = robotics_env_maker(
-    #     env_id=args.env_id, seed=args.seed, render=args.render, reward_type="sparse", height_th=0.6
-    # )
-
-    env = robotics_env_maker(
-        env_id="Mujoco/Walker2d-v4",
-        seed=args.seed,
-        render=args.render,
-        reward_type="dense",
-        task="speed",
-        goal_dist_th=0.1,
-        # random_tgt=False,
-        # tasks_to_complete=["microwave", "kettle"]
-    )
+    env = robotics_env_maker(env_id=args.env_id, seed=args.seed, render=args.render)
 
     agent = SAC(
         env=env,
@@ -109,7 +81,7 @@ def run():
         save_folder=args.save_folder,
     )
 
-    agent.learn(total_timesteps=args.total_timesteps, learning_starts=args.learning_starts, debug=False)
+    agent.learn(total_timesteps=args.total_timesteps, learning_starts=args.learning_starts)
 
     agent.save(indicator="final")
 
