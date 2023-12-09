@@ -324,15 +324,15 @@ class Walker2dEnv(MujocoEnv, utils.EzPickle):
 
 
 register(
-    id="Mujoco/Walker2d-Keep12-v4-Sparse",
-    entry_point="RLEnvs.Mujoco.walker2d_v4:Walker2dEnv",
+    id="MyMujoco/Walker2d-Keep12-v4-Sparse",
+    entry_point="RLEnvs.MyMujoco.walker2d_v4:Walker2dEnv",
     max_episode_steps=200,
     kwargs={"reward_type": "sparse", "task": "height", "goal_dist_th": 0.05, "tgt_height": 1.2},
 )
 
 register(
-    id="Mujoco/Walker2d-Keep13-v4-Sparse",
-    entry_point="RLEnvs.Mujoco.walker2d_v4:Walker2dEnv",
+    id="MyMujoco/Walker2d-Keep13-v4-Sparse",
+    entry_point="RLEnvs.MyMujoco.walker2d_v4:Walker2dEnv",
     max_episode_steps=200,
     kwargs={"reward_type": "sparse", "task": "height", "goal_dist_th": 0.05, "tgt_height": 1.3},
 )

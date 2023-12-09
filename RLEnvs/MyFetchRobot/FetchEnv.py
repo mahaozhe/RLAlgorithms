@@ -6,11 +6,9 @@
  # @ Description: customed fetch env based on gymnasium-robotics
  """
 
-
 from typing import Union
 
 import numpy as np
-from scipy.spatial.transform import Rotation
 from gymnasium_robotics.envs.robot_env import MujocoRobotEnv
 from gymnasium_robotics.utils import rotations
 import transformations as tft
@@ -44,18 +42,18 @@ def get_base_fetch_env(RobotEnvClass: MujocoRobotEnv):
         """Superclass for all Fetch environments."""
 
         def __init__(
-            self,
-            gripper_extra_height,
-            block_gripper,
-            has_object: bool,
-            target_in_the_air,
-            target_offset,
-            obj_range,
-            target_range,
-            distance_threshold,
-            reward_type,
-            goal_type="pos",  # "pos" or "rot"
-            **kwargs
+                self,
+                gripper_extra_height,
+                block_gripper,
+                has_object: bool,
+                target_in_the_air,
+                target_offset,
+                obj_range,
+                target_range,
+                distance_threshold,
+                reward_type,
+                goal_type="pos",  # "pos" or "rot"
+                **kwargs
         ):
             """Initializes a new Fetch environment.
 

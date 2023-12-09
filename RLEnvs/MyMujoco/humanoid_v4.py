@@ -380,22 +380,22 @@ class HumanoidEnv(MujocoEnv, utils.EzPickle):
 
 
 register(
-    id="Mujoco/Humanoid-Keep13-v4-Sparse",
-    entry_point="RLEnvs.Mujoco.humanoid_v4:HumanoidEnv",
+    id="MyMujoco/Humanoid-Keep13-v4-Sparse",
+    entry_point="RLEnvs.MyMujoco.humanoid_v4:HumanoidEnv",
     max_episode_steps=200,
     kwargs={"reward_type": "sparse", "height_th": 1.3},
 )
 
 register(
-    id="Mujoco/Humanoid-Keep14-v4-Sparse",
-    entry_point="RLEnvs.Mujoco.humanoid_v4:HumanoidEnv",
+    id="MyMujoco/Humanoid-Keep14-v4-Sparse",
+    entry_point="RLEnvs.MyMujoco.humanoid_v4:HumanoidEnv",
     max_episode_steps=200,
     kwargs={"reward_type": "sparse", "height_th": 1.4},
 )
 
 register(
-    id="Mujoco/Humanoid-Keep15-v4-Sparse",
-    entry_point="RLEnvs.Mujoco.humanoid_v4:HumanoidEnv",
+    id="MyMujoco/Humanoid-Keep15-v4-Sparse",
+    entry_point="RLEnvs.MyMujoco.humanoid_v4:HumanoidEnv",
     max_episode_steps=200,
     kwargs={"reward_type": "sparse", "height_th": 1.5},
 )
