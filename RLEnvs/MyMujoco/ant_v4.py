@@ -182,24 +182,24 @@ class AntEnv(MujocoEnv, utils.EzPickle):
     }
 
     def __init__(
-        self,
-        xml_file="ant.xml",
-        ctrl_cost_weight=0.5,
-        use_contact_forces=False,
-        contact_cost_weight=5e-4,
-        healthy_reward=1.0,
-        terminate_when_unhealthy=True,
-        healthy_z_range=(0.2, 1.0),
-        contact_force_range=(-1.0, 1.0),
-        reset_noise_scale=0.1,
-        exclude_current_positions_from_observation=True,
-        reward_type="sparse",
-        task="speed",
-        goal_dist_th=0.1,
-        tgt_height=0.6,
-        tgt_speed=1,
-        random_tgt=False,
-        **kwargs,
+            self,
+            xml_file="ant.xml",
+            ctrl_cost_weight=0.5,
+            use_contact_forces=False,
+            contact_cost_weight=5e-4,
+            healthy_reward=1.0,
+            terminate_when_unhealthy=True,
+            healthy_z_range=(0.2, 1.0),
+            contact_force_range=(-1.0, 1.0),
+            reset_noise_scale=0.1,
+            exclude_current_positions_from_observation=True,
+            reward_type="sparse",
+            task="speed",
+            goal_dist_th=0.1,
+            tgt_height=0.6,
+            tgt_speed=1,
+            random_tgt=False,
+            **kwargs,
     ):
         ctrl_cost_weight = 0.1
         utils.EzPickle.__init__(
@@ -221,7 +221,7 @@ class AntEnv(MujocoEnv, utils.EzPickle):
         self._random_tgt = random_tgt
         self._task = task
         self._tgt_speed = np.random.uniform(-2, 2) if self._random_tgt else tgt_speed
-        self._tgt_pos = gen_rand_point_within((0, 0), 2, 10)
+        self._tgt_pos = gen_rand_point_within((0, 0), 2, 10) if self._random_tgt else tgt_speed
         self._goal_dist_th = goal_dist_th
         self._tgt_height = tgt_height
         self._reward_type = reward_type
@@ -310,9 +310,11 @@ class AntEnv(MujocoEnv, utils.EzPickle):
             costs = ctrl_cost
         elif self._reward_type == "sparse":
             if self._task == "speed":
-                rewards = (np.abs(x_velocity - self._tgt_speed) < self._goal_dist_th) - 1
+                # rewards = (np.abs(x_velocity - self._tgt_speed) < self._goal_dist_th) - 1
+                rewards = int(np.abs(x_velocity) > self._tgt_speed) - 1
             elif self._task == "pos":
-                rewards = (np.linalg.norm(xy_position_after - self._tgt_pos) < self._goal_dist_th) - 1
+                # rewards = (np.linalg.norm(xy_position_after - self._tgt_pos) < self._goal_dist_th) - 1
+                rewards = (np.linalg.norm(xy_position_after) >= self._tgt_pos) - 1
             elif self._task == "height":
                 rewards = int(observation['observation'][0] >= self._tgt_height) - 1  # {-1,0}
             # costs = ctrl_cost = self.control_cost(action)
@@ -358,8 +360,8 @@ class AntEnv(MujocoEnv, utils.EzPickle):
             achieved_goal = np.array([velocity[13]])
             desired_goal = np.array([self._tgt_speed])
         elif self._task == "pos":
-            achieved_goal = np.array([position[1], position[2]])
-            desired_goal = np.array(self._tgt_pos)
+            achieved_goal = np.array([np.linalg.norm([position[1], position[2]])])
+            desired_goal = np.array([self._tgt_pos])
         elif self._task == "height":
             achieved_goal = np.array([position[2]])
             desired_goal = np.array([self._tgt_height])
@@ -381,7 +383,7 @@ class AntEnv(MujocoEnv, utils.EzPickle):
 
         # initial target point should be within a fan-shaped area
         if self._task == "pos":
-            self._tgt_pos = gen_rand_point_within((0, 0), 1, 5)
+            self._tgt_pos = gen_rand_point_within((0, 0), 1, 5) if self._random_tgt else self._tgt_speed
         elif self._task == "speed":
             self._tgt_speed = gen_rand_num_within(1, 10) if self._random_tgt else self._tgt_speed
 
@@ -404,6 +406,13 @@ register(
 )
 
 register(
+    id="MyMujoco/Ant-Height09-v4-Sparse",
+    entry_point="RLEnvs.MyMujoco.ant_v4:AntEnv",
+    max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "task": "height", "goal_dist_th": 0.05, "tgt_height": 0.9},
+)
+
+register(
     id="MyMujoco/Ant-Height10-v4-Sparse",
     entry_point="RLEnvs.MyMujoco.ant_v4:AntEnv",
     max_episode_steps=200,
@@ -418,8 +427,71 @@ register(
 )
 
 register(
+    id="MyMujoco/Ant-Speed005-v4-Sparse",
+    entry_point="RLEnvs.MyMujoco.ant_v4:AntEnv",
+    max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "task": "speed", "goal_dist_th": 0.05},
+)
+
+register(
+    id="MyMujoco/Ant-Speed5-v4-Sparse",
+    entry_point="RLEnvs.MyMujoco.ant_v4:AntEnv",
+    max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "task": "speed", "random_tgt": False, "tgt_speed": 5.0},
+)
+
+register(
+    id="MyMujoco/Ant-Speed4-v4-Sparse",
+    entry_point="RLEnvs.MyMujoco.ant_v4:AntEnv",
+    max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "task": "speed", "random_tgt": False, "tgt_speed": 4.0},
+)
+
+register(
+    id="MyMujoco/Ant-Speed3-v4-Sparse",
+    entry_point="RLEnvs.MyMujoco.ant_v4:AntEnv",
+    max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "task": "speed", "random_tgt": False, "tgt_speed": 3.0},
+)
+
+register(
+    id="MyMujoco/Ant-Speed2-v4-Sparse",
+    entry_point="RLEnvs.MyMujoco.ant_v4:AntEnv",
+    max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "task": "speed", "random_tgt": False, "tgt_speed": 2.0},
+)
+
+register(
     id="MyMujoco/Ant-Reach-v4-Sparse",
     entry_point="RLEnvs.MyMujoco.ant_v4:AntEnv",
     max_episode_steps=200,
     kwargs={"reward_type": "sparse", "task": "pos", "goal_dist_th": 0.1},
+)
+
+register(
+    id="MyMujoco/Ant-Far2-v4-Sparse",
+    entry_point="RLEnvs.MyMujoco.ant_v4:AntEnv",
+    max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "task": "pos", "random_tgt": False, "tgt_speed": 2.0},
+)
+
+register(
+    id="MyMujoco/Ant-Far3-v4-Sparse",
+    entry_point="RLEnvs.MyMujoco.ant_v4:AntEnv",
+    max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "task": "pos", "random_tgt": False, "tgt_speed": 3.0},
+)
+
+register(
+    id="MyMujoco/Ant-Far4-v4-Sparse",
+    entry_point="RLEnvs.MyMujoco.ant_v4:AntEnv",
+    max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "task": "pos", "random_tgt": False, "tgt_speed": 4.0},
+)
+
+register(
+    id="MyMujoco/Ant-Far5-v4-Sparse",
+    entry_point="RLEnvs.MyMujoco.ant_v4:AntEnv",
+    max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "task": "pos", "random_tgt": False, "tgt_speed": 5.0},
 )

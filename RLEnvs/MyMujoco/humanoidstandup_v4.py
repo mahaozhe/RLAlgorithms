@@ -296,3 +296,10 @@ register(
     max_episode_steps=200,
     kwargs={"reward_type": "sparse", "height_th": 0.3},
 )
+
+register(
+    id="MyMujoco/HumanoidStandup-Height02-v4-Sparse",
+    entry_point="RLEnvs.MyMujoco.humanoidstandup_v4:HumanoidStandupEnv",
+    max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "height_th": 0.2},
+)

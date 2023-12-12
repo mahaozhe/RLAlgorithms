@@ -338,3 +338,24 @@ register(
     max_episode_steps=200,
     kwargs={"reward_type": "sparse", "task": "height", "goal_dist_th": 0.05, "tgt_height": 1.3},
 )
+
+register(
+    id="MyMujoco/Hopper-Keep14-v4-Sparse",
+    entry_point="RLEnvs.MyMujoco.hopper_v4:HopperEnv",
+    max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "task": "height", "goal_dist_th": 0.05, "tgt_height": 1.4},
+)
+
+register(
+    id="MyMujoco/Hopper-Keep15-v4-Sparse",
+    entry_point="RLEnvs.MyMujoco.hopper_v4:HopperEnv",
+    max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "task": "height", "goal_dist_th": 0.05, "tgt_height": 1.5},
+)
+
+register(
+    id="MyMujoco/Hopper-Keep145-v4-Sparse",
+    entry_point="RLEnvs.MyMujoco.hopper_v4:HopperEnv",
+    max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "task": "height", "goal_dist_th": 0.05, "tgt_height": 1.45},
+)
