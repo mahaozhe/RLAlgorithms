@@ -76,12 +76,12 @@ def run():
     # )
 
     env = robotics_env_maker(
-        env_id="Mujoco/Walker2d-v4",
+        env_id="Mujoco/Humanoid-v4-Sparse",
         seed=args.seed,
         render=args.render,
-        reward_type="dense",
-        task="speed",
-        goal_dist_th=0.1,
+        reward_type="sparse",
+        # task="height",
+        # goal_dist_th=0.1,
         # random_tgt=False,
         # tasks_to_complete=["microwave", "kettle"]
     )
