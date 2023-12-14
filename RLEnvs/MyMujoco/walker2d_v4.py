@@ -153,22 +153,22 @@ class Walker2dEnv(MujocoEnv, utils.EzPickle):
     }
 
     def __init__(
-        self,
-        forward_reward_weight=1.0,
-        ctrl_cost_weight=1e-3,
-        healthy_reward=1.0,
-        terminate_when_unhealthy=True,
-        healthy_z_range=(0.8, 2.0),
-        healthy_angle_range=(-1.0, 1.0),
-        reset_noise_scale=5e-3,
-        exclude_current_positions_from_observation=True,
-        reward_type="sparse",
-        goal_dist_th=0.05,
-        task="height",
-        tgt_height=1.0,
-        tgt_speed=0.5,
-        random_tgt=False,
-        **kwargs,
+            self,
+            forward_reward_weight=1.0,
+            ctrl_cost_weight=1e-3,
+            healthy_reward=1.0,
+            terminate_when_unhealthy=True,
+            healthy_z_range=(0.8, 2.0),
+            healthy_angle_range=(-1.0, 1.0),
+            reset_noise_scale=5e-3,
+            exclude_current_positions_from_observation=True,
+            reward_type="sparse",
+            goal_dist_th=0.05,
+            task="height",
+            tgt_height=1.0,
+            tgt_speed=0.5,
+            random_tgt=False,
+            **kwargs,
     ):
         utils.EzPickle.__init__(
             self,
@@ -281,8 +281,9 @@ class Walker2dEnv(MujocoEnv, utils.EzPickle):
                 rewards = int(observation["achieved_goal"] >= observation["desired_goal"]) - 1
             elif self.task == "speed":
                 rewards = (
-                    int(np.linalg.norm(observation["achieved_goal"] - observation["desired_goal"]) <= self.goal_dist_th)
-                    - 1
+                        int(np.linalg.norm(
+                            observation["achieved_goal"] - observation["desired_goal"]) <= self.goal_dist_th)
+                        - 1
                 )
             ctrl_cost = 0
 
@@ -324,15 +325,36 @@ class Walker2dEnv(MujocoEnv, utils.EzPickle):
 
 
 register(
-    id="Mujoco/Walker2d-Keep12-v4-Sparse",
-    entry_point="RLEnvs.Mujoco.walker2d_v4:Walker2dEnv",
+    id="MyMujoco/Walker2d-Keep12-v4-Sparse",
+    entry_point="RLEnvs.MyMujoco.walker2d_v4:Walker2dEnv",
     max_episode_steps=200,
     kwargs={"reward_type": "sparse", "task": "height", "goal_dist_th": 0.05, "tgt_height": 1.2},
 )
 
 register(
-    id="Mujoco/Walker2d-Keep13-v4-Sparse",
-    entry_point="RLEnvs.Mujoco.walker2d_v4:Walker2dEnv",
+    id="MyMujoco/Walker2d-Keep13-v4-Sparse",
+    entry_point="RLEnvs.MyMujoco.walker2d_v4:Walker2dEnv",
     max_episode_steps=200,
     kwargs={"reward_type": "sparse", "task": "height", "goal_dist_th": 0.05, "tgt_height": 1.3},
+)
+
+register(
+    id="MyMujoco/Walker2d-Keep14-v4-Sparse",
+    entry_point="RLEnvs.MyMujoco.walker2d_v4:Walker2dEnv",
+    max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "task": "height", "goal_dist_th": 0.05, "tgt_height": 1.4},
+)
+
+register(
+    id="MyMujoco/Walker2d-Keep15-v4-Sparse",
+    entry_point="RLEnvs.MyMujoco.walker2d_v4:Walker2dEnv",
+    max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "task": "height", "goal_dist_th": 0.05, "tgt_height": 1.5},
+)
+
+register(
+    id="MyMujoco/Walker2d-Keep145-v4-Sparse",
+    entry_point="RLEnvs.MyMujoco.walker2d_v4:Walker2dEnv",
+    max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "task": "height", "goal_dist_th": 0.05, "tgt_height": 1.45},
 )

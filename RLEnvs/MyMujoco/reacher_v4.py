@@ -197,8 +197,15 @@ class ReacherEnv(MujocoEnv, utils.EzPickle):
 
 
 register(
-    id="Mujoco/Reacher-v4-Sparse",
-    entry_point="RLEnvs.Mujoco.reacher_v4:ReacherEnv",
+    id="MyMujoco/Reacher-v4-Sparse",
+    entry_point="RLEnvs.MyMujoco.reacher_v4:ReacherEnv",
     max_episode_steps=200,
     kwargs={"reward_type": "sparse"},
+)
+
+register(
+    id="MyMujoco/Reacher002-v4-Sparse",
+    entry_point="RLEnvs.MyMujoco.reacher_v4:ReacherEnv",
+    max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "goal_dist_th": 0.02},
 )

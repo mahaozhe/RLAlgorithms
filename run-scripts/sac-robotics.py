@@ -3,7 +3,6 @@ The script to run SAC on continuous control environments.
 """
 import argparse
 
-import sys_env
 from Networks.ActorNetworks import SACActor
 from Networks.QValueNetworks import QNetworkContinuousControl
 from RLAlgos.SAC import SAC
@@ -21,7 +20,7 @@ def parse_args():
 
     parser.add_argument("--env-id", type=str, default="FetchReach-v2")
 
-    parser.add_argument("--render", type=bool, default=True)
+    parser.add_argument("--render", type=bool, default=False)
 
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--cuda", type=int, default=0)

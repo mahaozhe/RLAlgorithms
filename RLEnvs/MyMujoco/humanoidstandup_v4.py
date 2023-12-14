@@ -270,29 +270,36 @@ class HumanoidStandupEnv(MujocoEnv, utils.EzPickle):
 
 
 register(
-    id="Mujoco/HumanoidStandup-Height06-v4-Sparse",
-    entry_point="RLEnvs.Mujoco.humanoidstandup_v4:HumanoidStandupEnv",
+    id="MyMujoco/HumanoidStandup-Height06-v4-Sparse",
+    entry_point="RLEnvs.MyMujoco.humanoidstandup_v4:HumanoidStandupEnv",
     max_episode_steps=200,
     kwargs={"reward_type": "sparse", "height_th": 0.6},
 )
 
 register(
-    id="Mujoco/HumanoidStandup-Height05-v4-Sparse",
-    entry_point="RLEnvs.Mujoco.humanoidstandup_v4:HumanoidStandupEnv",
+    id="MyMujoco/HumanoidStandup-Height05-v4-Sparse",
+    entry_point="RLEnvs.MyMujoco.humanoidstandup_v4:HumanoidStandupEnv",
     max_episode_steps=200,
     kwargs={"reward_type": "sparse", "height_th": 0.5},
 )
 
 register(
-    id="Mujoco/HumanoidStandup-Height04-v4-Sparse",
-    entry_point="RLEnvs.Mujoco.humanoidstandup_v4:HumanoidStandupEnv",
+    id="MyMujoco/HumanoidStandup-Height04-v4-Sparse",
+    entry_point="RLEnvs.MyMujoco.humanoidstandup_v4:HumanoidStandupEnv",
     max_episode_steps=200,
     kwargs={"reward_type": "sparse", "height_th": 0.4},
 )
 
 register(
-    id="Mujoco/HumanoidStandup-Height03-v4-Sparse",
-    entry_point="RLEnvs.Mujoco.humanoidstandup_v4:HumanoidStandupEnv",
+    id="MyMujoco/HumanoidStandup-Height03-v4-Sparse",
+    entry_point="RLEnvs.MyMujoco.humanoidstandup_v4:HumanoidStandupEnv",
     max_episode_steps=200,
     kwargs={"reward_type": "sparse", "height_th": 0.3},
+)
+
+register(
+    id="MyMujoco/HumanoidStandup-Height02-v4-Sparse",
+    entry_point="RLEnvs.MyMujoco.humanoidstandup_v4:HumanoidStandupEnv",
+    max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "height_th": 0.2},
 )
