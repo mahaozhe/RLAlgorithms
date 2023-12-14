@@ -42,18 +42,22 @@ def get_base_fetch_env(RobotEnvClass: MujocoRobotEnv):
         """Superclass for all Fetch environments."""
 
         def __init__(
-                self,
-                gripper_extra_height,
-                block_gripper,
-                has_object: bool,
-                target_in_the_air,
-                target_offset,
-                obj_range,
-                target_range,
-                distance_threshold,
-                reward_type,
-                goal_type="pos",  # "pos" or "rot"
-                **kwargs
+            self,
+            gripper_extra_height,
+            block_gripper,
+            has_object: bool,
+            target_in_the_air,
+            target_offset,
+            obj_range,
+            target_range,
+            distance_threshold,
+            reward_type,
+            goal_type="pos",  # "pos" or "rot"
+            tgt_obj_pos=[0.5, 0.5],
+            tgt_obj_yaw=0.785,
+            random_goal=True,
+            random_init=True,
+            **kwargs
         ):
             """Initializes a new Fetch environment.
 
@@ -73,6 +77,10 @@ def get_base_fetch_env(RobotEnvClass: MujocoRobotEnv):
             """
 
             self.goal_type = goal_type
+            self.tgt_obj_pos = tgt_obj_pos
+            self.tgt_obj_yaw = tgt_obj_yaw
+            self.random_goal = random_goal
+            self.random_init = random_init
 
             self.gripper_extra_height = gripper_extra_height
             self.block_gripper = block_gripper
@@ -127,7 +135,6 @@ def get_base_fetch_env(RobotEnvClass: MujocoRobotEnv):
             else:
                 assert action.shape == (8,)  # 7 arm joints + 1 gripper displacement
                 action = action.copy()
-
             return action
 
         def _get_obs(self):
@@ -195,18 +202,26 @@ def get_base_fetch_env(RobotEnvClass: MujocoRobotEnv):
             raise NotImplementedError
 
         def _sample_goal(self):
-            if self.has_object:
-                goal = self.initial_gripper_xpos[:3] + self.np_random.uniform(
-                    -self.target_range, self.target_range, size=3
-                )
-                goal += self.target_offset
-                goal[2] = self.height_offset
-                if self.target_in_the_air and self.np_random.uniform() < 0.5:
-                    goal[2] += self.np_random.uniform(0, 0.45)
-                if self.goal_type == "rot":
-                    rand_yaw = self.np_random.uniform(0, 2 * np.pi)
-                    quat = tft.quaternion_from_euler(0, 0, rand_yaw)
-                    goal = np.concatenate([goal, quat])
+            if self.has_object:  # push or pick
+                if self.random_goal:
+                    goal = self.initial_gripper_xpos[:3] + self.np_random.uniform(
+                        -self.target_range, self.target_range, size=3
+                    )
+                    goal += self.target_offset
+                    goal[2] = self.height_offset
+                    if self.target_in_the_air and self.np_random.uniform() < 0.5:
+                        goal[2] += self.np_random.uniform(0, 0.45)
+                    if self.goal_type == "rot":
+                        rand_yaw = self.np_random.uniform(0, 2 * np.pi)
+                        quat = tft.quaternion_from_euler(0, 0, rand_yaw)
+                        goal = np.concatenate([goal, quat])
+                else:
+                    goal = self.initial_gripper_xpos[:3] + [self.tgt_obj_pos[0], self.tgt_obj_pos[1], 0]
+                    goal += self.target_offset
+                    goal[2] = self.height_offset
+                    if self.goal_type == "rot":
+                        quat = tft.quaternion_from_euler(0, 0, self.tgt_obj_yaw)
+                        goal = np.concatenate([goal, quat])
             else:
                 goal = self.initial_gripper_xpos[:3] + self.np_random.uniform(
                     -self.target_range, self.target_range, size=3
@@ -319,11 +334,14 @@ class MujocoFetchEnv(get_base_fetch_env(MujocoRobotEnv)):
 
         # Randomize start position of object.
         if self.has_object:
-            object_xpos = self.initial_gripper_xpos[:2]
-            while np.linalg.norm(object_xpos - self.initial_gripper_xpos[:2]) < 0.2:
-                object_xpos = self.initial_gripper_xpos[:2] + self.np_random.uniform(
-                    -self.obj_range, self.obj_range, size=2
-                )
+            if self.random_init:
+                object_xpos = self.initial_gripper_xpos[:2]
+                while np.linalg.norm(object_xpos - self.initial_gripper_xpos[:2]) < 0.2:
+                    object_xpos = self.initial_gripper_xpos[:2] + self.np_random.uniform(
+                        -self.obj_range, self.obj_range, size=2
+                    )
+            else:
+                object_xpos = [1.3455407 , 0.74902433]
             object_qpos = self._utils.get_joint_qpos(self.model, self.data, "object0:joint")
             assert object_qpos.shape == (7,)
             object_qpos[:2] = object_xpos

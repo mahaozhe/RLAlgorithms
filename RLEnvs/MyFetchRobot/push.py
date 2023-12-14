@@ -36,6 +36,10 @@ class MujocoFetchPushEnv(MujocoFetchEnv, EzPickle):
             distance_threshold=0.05,
             initial_qpos=initial_qpos,
             reward_type=reward_type,
+            tgt_obj_pos=[0.1, 0],
+            tgt_obj_yaw=0.785,
+            random_goal=False,
+            random_init=False,
             **kwargs,
         )
         EzPickle.__init__(self, reward_type=reward_type, **kwargs)
