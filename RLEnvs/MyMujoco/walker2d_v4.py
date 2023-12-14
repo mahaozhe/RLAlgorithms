@@ -288,9 +288,7 @@ class Walker2dEnv(MujocoEnv, utils.EzPickle):
 
         costs = ctrl_cost
         reward = rewards - costs
-        print(
-            f"healthy:{str(not self.terminated):5s} reward: {reward:-7.2f} achieved_goal: {observation['achieved_goal'][0]:-6.2f} desired_goal: {observation['desired_goal'][0]:-6.2f}"
-        )
+
         terminated = self.terminated
         info = {
             "x_position": x_position_after,
@@ -326,7 +324,15 @@ class Walker2dEnv(MujocoEnv, utils.EzPickle):
 
 
 register(
-    id="Mujoco/Walker2d-v4",
+    id="Mujoco/Walker2d-Keep12-v4-Sparse",
     entry_point="RLEnvs.Mujoco.walker2d_v4:Walker2dEnv",
     max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "task": "height", "goal_dist_th": 0.05, "tgt_height": 1.2},
+)
+
+register(
+    id="Mujoco/Walker2d-Keep13-v4-Sparse",
+    entry_point="RLEnvs.Mujoco.walker2d_v4:Walker2dEnv",
+    max_episode_steps=200,
+    kwargs={"reward_type": "sparse", "task": "height", "goal_dist_th": 0.05, "tgt_height": 1.3},
 )
