@@ -42,22 +42,23 @@ def get_base_fetch_env(RobotEnvClass: MujocoRobotEnv):
         """Superclass for all Fetch environments."""
 
         def __init__(
-            self,
-            gripper_extra_height,
-            block_gripper,
-            has_object: bool,
-            target_in_the_air,
-            target_offset,
-            obj_range,
-            target_range,
-            distance_threshold,
-            reward_type,
-            goal_type="pos",  # "pos" or "rot"
-            tgt_obj_pos=[0.5, 0.5],
-            tgt_obj_yaw=0.785,
-            random_goal=True,
-            random_init=True,
-            **kwargs
+                self,
+                gripper_extra_height,
+                block_gripper,
+                has_object: bool,
+                target_in_the_air,
+                target_offset,
+                obj_range,
+                target_range,
+                distance_threshold,
+                reward_type,
+                goal_type="pos",  # "pos" or "rot"
+                tgt_obj_pos=[0.5, 0.5],
+                tgt_obj_yaw=0.785,
+                random_goal=True,
+                random_init=True,
+                init_x_pos=1.3455407,
+                **kwargs
         ):
             """Initializes a new Fetch environment.
 
@@ -81,6 +82,7 @@ def get_base_fetch_env(RobotEnvClass: MujocoRobotEnv):
             self.tgt_obj_yaw = tgt_obj_yaw
             self.random_goal = random_goal
             self.random_init = random_init
+            self.init_x_pos = init_x_pos
 
             self.gripper_extra_height = gripper_extra_height
             self.block_gripper = block_gripper
@@ -341,7 +343,7 @@ class MujocoFetchEnv(get_base_fetch_env(MujocoRobotEnv)):
                         -self.obj_range, self.obj_range, size=2
                     )
             else:
-                object_xpos = [1.3455407 , 0.74902433]
+                object_xpos = [self.init_x_pos, 0.74902433]
             object_qpos = self._utils.get_joint_qpos(self.model, self.data, "object0:joint")
             assert object_qpos.shape == (7,)
             object_qpos[:2] = object_xpos

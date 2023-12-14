@@ -55,26 +55,7 @@ def parse_args():
 def run():
     args = parse_args()
 
-    # for ant_v4
-    # env = robotics_env_maker(
-    #     env_id=args.env_id, seed=args.seed, render=args.render, reward_type="sparse", task="speed", goal_dist_th=0.1
-    # )
-
-    # for humanoid_v4
-    # env = robotics_env_maker(
-    #     env_id=args.env_id, seed=args.seed, render=args.render, reward_type="sparse", height_th=0.6
-    # )
-
-    env = robotics_env_maker(
-        env_id="Mujoco/Humanoid-v4-Sparse",
-        seed=args.seed,
-        render=args.render,
-        reward_type="sparse",
-        # task="height",
-        # goal_dist_th=0.1,
-        # random_tgt=False,
-        # tasks_to_complete=["microwave", "kettle"]
-    )
+    env = robotics_env_maker(env_id=args.env_id, seed=args.seed, render=args.render)
 
     agent = SAC(
         env=env,
