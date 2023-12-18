@@ -9,6 +9,9 @@ from RLAlgos.TD3 import TD3
 from Networks.ActorNetworks import DeterministicActorContinuousControl
 from Networks.QValueNetworks import QNetworkContinuousControl
 
+from RLEnvs.MyFetchRobot import push, reach, slide, rotate
+from RLEnvs.MyMujoco import ant_v4, humanoid_v4, humanoidstandup_v4, reacher_v4, hopper_v4, walker2d_v4
+
 from utils.env_makers import robotics_env_maker
 
 
