@@ -145,7 +145,8 @@ class PPO:
     def learn(self, total_timesteps=500000):
         global_step = 0
 
-        next_obs, _ = torch.Tensor(self.envs.reset()).to(self.device)
+        next_obs, _ = self.envs.reset()
+        next_obs = torch.Tensor(next_obs).to(self.device)
         next_done = torch.zeros(self.num_envs).to(self.device)
 
         # the number of updates = total_timesteps // (rollout_length * num_envs)
@@ -183,13 +184,12 @@ class PPO:
                 next_obs = torch.Tensor(next_obs).to(self.device)
                 next_done = torch.Tensor(done).to(self.device)
 
-                # Only print when at least 1 env is done
-                for item in info:
-                    if "episode" in item.keys():
-                        print(f"global_step={global_step}, episodic_return={info['episode']['r']}")
-                        self.writer.add_scalar("charts/episodic_return", info["episode"]["r"], global_step)
-                        self.writer.add_scalar("charts/episodic_length", info["episode"]["l"], global_step)
-                        break
+                # check if there is 1 in the next_done
+                if next_done.sum() > 0:
+                    one_done_index = torch.where(next_done == 1)[0][0]
+                    episodic_return = info["final_info"][one_done_index]["episode"]["r"]
+                    print(f"global_step={global_step}, episodic_return={episodic_return}")
+                    self.writer.add_scalar("charts/episodic_return", episodic_return, global_step)
 
             self.optimize(global_step, next_obs, next_done)
 
@@ -216,7 +216,8 @@ class PPO:
                     next_values = self.values[t + 1]
 
                 # compute the TD residual: the advantage
-                delta = self.rewards[t] + self.gamma * next_values * next_non_terminal - self.values[t]
+                delta = self.rewards[t] + self.gamma * next_values.view(-1) * next_non_terminal - self.values[t]
+
                 advantages[t] = last_gae_lam = delta + self.gamma * self.gae_lambda * next_non_terminal * last_gae_lam
 
             returns = advantages + self.values
