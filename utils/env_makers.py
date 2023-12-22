@@ -147,7 +147,7 @@ def sync_vector_mujoco_envs_maker(env_id, num_envs, gamma, seed=1):
 
 def sync_vector_robotics_envs_maker(env_id, num_envs, seed=1):
     envs = gym.vector.SyncVectorEnv(
-        [lambda: robotics_env_maker(env_id, seed, render=False) for _ in range(num_envs)]
+        [lambda: robotics_env_maker(env_id, seed, render=True) for _ in range(num_envs)]
     )
 
     return envs
