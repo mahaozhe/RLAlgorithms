@@ -63,37 +63,37 @@ class PPO_RND:
     """
 
     def __init__(
-        self,
-        envs,
-        agent_class,
-        exp_name="ppo",
-        seed=1,
-        cuda=0,
-        gamma=0.99,
-        # PND args------
-        int_gamma=0.99,
-        gae_lambda=0.95,
-        int_coef=1.0,
-        ext_coef=2.0,
-        update_proportion=0.25,
-        num_iterations_obs_norm_init=50,
-        # --------------
-        rollout_length=128,
-        lr=2.5e-4,
-        eps=1e-5,
-        anneal_lr=True,
-        num_mini_batches=4,
-        update_epochs=4,
-        norm_adv=True,
-        clip_value_loss=True,
-        clip_coef=0.2,
-        entropy_coef=0.01,
-        value_coef=0.5,
-        max_grad_norm=0.5,
-        target_kl=None,
-        rpo_alpha=None,
-        write_frequency=100,
-        save_folder="./ppo/",
+            self,
+            envs,
+            agent_class,
+            exp_name="ppo",
+            seed=1,
+            cuda=0,
+            gamma=0.99,
+            # PND args------
+            int_gamma=0.99,
+            gae_lambda=0.95,
+            int_coef=1.0,
+            ext_coef=2.0,
+            update_proportion=0.25,
+            num_iterations_obs_norm_init=50,
+            # --------------
+            rollout_length=128,
+            lr=2.5e-4,
+            eps=1e-5,
+            anneal_lr=True,
+            num_mini_batches=4,
+            update_epochs=4,
+            norm_adv=True,
+            clip_value_loss=True,
+            clip_coef=0.2,
+            entropy_coef=0.01,
+            value_coef=0.5,
+            max_grad_norm=0.5,
+            target_kl=None,
+            rpo_alpha=None,
+            write_frequency=100,
+            save_folder="./ppo/",
     ):
         """
         The initialization of the PPO class.
@@ -284,8 +284,8 @@ class PPO_RND:
                 # ).float()
                 rnd_next_obs = (
                     (
-                        (next_obs - torch.from_numpy(self.obs_rms.mean).to(self.device))
-                        / torch.sqrt(torch.from_numpy(self.obs_rms.var).to(self.device))
+                            (next_obs - torch.from_numpy(self.obs_rms.mean).to(self.device))
+                            / torch.sqrt(torch.from_numpy(self.obs_rms.var).to(self.device))
                     )
                     .clip(-5, 5)  # TODO: check whether need to clip
                     .float()
@@ -313,7 +313,7 @@ class PPO_RND:
                 np.std(curiosity_reward_per_env),
                 len(curiosity_reward_per_env),
             )
-            self.reward_rms.update_from_moments(mean, std**2, count)
+            self.reward_rms.update_from_moments(mean, std ** 2, count)
             self.curiosity_rewards /= np.sqrt(self.reward_rms.var)
 
             self.optimize(global_step, next_obs, next_done)
@@ -363,15 +363,15 @@ class PPO_RND:
                 # XXX RND
                 ext_delta = self.rewards[t] + self.gamma * ext_nextvalues * ext_nextnonterminal - self.ext_values[t]
                 int_delta = (
-                    self.curiosity_rewards[t]
-                    + self.int_gamma * int_nextvalues * int_nextnonterminal
-                    - self.int_values[t]
+                        self.curiosity_rewards[t]
+                        + self.int_gamma * int_nextvalues * int_nextnonterminal
+                        - self.int_values[t]
                 )
                 ext_advantages[t] = ext_lastgaelam = (
-                    ext_delta + self.gamma * self.gae_lambda * ext_nextnonterminal * ext_lastgaelam
+                        ext_delta + self.gamma * self.gae_lambda * ext_nextnonterminal * ext_lastgaelam
                 )
                 int_advantages[t] = int_lastgaelam = (
-                    int_delta + self.int_gamma * self.gae_lambda * int_nextnonterminal * int_lastgaelam
+                        int_delta + self.int_gamma * self.gae_lambda * int_nextnonterminal * int_lastgaelam
                 )
 
             # returns = advantages + self.values
@@ -407,8 +407,8 @@ class PPO_RND:
         # ).float()
         rnd_next_obs = (
             (
-                (b_obs - torch.from_numpy(self.obs_rms.mean).to(self.device))
-                / torch.sqrt(torch.from_numpy(self.obs_rms.var).to(self.device))
+                    (b_obs - torch.from_numpy(self.obs_rms.mean).to(self.device))
+                    / torch.sqrt(torch.from_numpy(self.obs_rms.var).to(self.device))
             )
             .clip(-5, 5)
             .float()
@@ -455,7 +455,7 @@ class PPO_RND:
                 # calculate the value loss
                 # new_values = new_values.view(-1)
                 new_ext_values, new_int_values = new_ext_values.view(-1), new_int_values.view(-1)
-                
+
                 # clip the value loss if needed
                 if self.clip_value_loss:
                     # v_loss_unclipped = (new_values - b_returns[mb_indices]) ** 2
@@ -465,7 +465,7 @@ class PPO_RND:
                     # v_loss_clipped = (v_clipped - b_returns[mb_indices]) ** 2
                     # v_loss_max = torch.max(v_loss_unclipped, v_loss_clipped)
                     # v_loss = 0.5 * v_loss_max.mean()
-                    
+
                     ext_v_loss_unclipped = (new_ext_values - b_ext_returns[mb_indices]) ** 2
                     ext_v_clipped = b_ext_values[mb_indices] + torch.clamp(
                         new_ext_values - b_ext_values[mb_indices],
