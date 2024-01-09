@@ -46,28 +46,7 @@ class MujocoFetchPushEnv(MujocoFetchEnv, EzPickle):
 
 
 register(
-    id="MyFetchRobot/Push-135-Jnt-v0",
-    entry_point="RLEnvs.MyFetchRobot.push:MujocoFetchPushEnv",
-    max_episode_steps=200,
-    kwargs={"reward_type": "sparse", "init_x_pos": 1.3955407},
-)
-
-register(
-    id="MyFetchRobot/Push-13-Jnt-v0",
-    entry_point="RLEnvs.MyFetchRobot.push:MujocoFetchPushEnv",
-    max_episode_steps=200,
-    kwargs={"reward_type": "sparse", "init_x_pos": 1.3455407},
-)
-
-register(
-    id="MyFetchRobot/Push-12-Jnt-v0",
-    entry_point="RLEnvs.MyFetchRobot.push:MujocoFetchPushEnv",
-    max_episode_steps=200,
-    kwargs={"reward_type": "sparse", "init_x_pos": 1.2455407},
-)
-
-register(
-    id="MyFetchRobot/Push-125-Jnt-v0",
+    id="MyFetchRobot/Push-Jnt-Sparse-v0",
     entry_point="RLEnvs.MyFetchRobot.push:MujocoFetchPushEnv",
     max_episode_steps=200,
     kwargs={"reward_type": "sparse", "init_x_pos": 1.2955407},

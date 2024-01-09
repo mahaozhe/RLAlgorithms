@@ -148,21 +148,21 @@ class HopperEnv(MujocoEnv, utils.EzPickle):
     }
 
     def __init__(
-        self,
-        forward_reward_weight=1.0,
-        ctrl_cost_weight=1e-3,
-        healthy_reward=1.0,
-        terminate_when_unhealthy=True,
-        healthy_state_range=(-100.0, 100.0),
-        healthy_z_range=(0.7, float("inf")),
-        healthy_angle_range=(-0.2, 0.2),
-        reset_noise_scale=5e-3,
-        exclude_current_positions_from_observation=True,
-        reward_type="sparse",
-        goal_dist_th=0.05,
-        task="height",
-        tgt_height=0.8,
-        **kwargs
+            self,
+            forward_reward_weight=1.0,
+            ctrl_cost_weight=1e-3,
+            healthy_reward=1.0,
+            terminate_when_unhealthy=True,
+            healthy_state_range=(-100.0, 100.0),
+            healthy_z_range=(0.7, float("inf")),
+            healthy_angle_range=(-0.2, 0.2),
+            reset_noise_scale=5e-3,
+            exclude_current_positions_from_observation=True,
+            reward_type="sparse",
+            goal_dist_th=0.05,
+            task="height",
+            tgt_height=0.8,
+            **kwargs
     ):
         utils.EzPickle.__init__(
             self,
@@ -282,8 +282,9 @@ class HopperEnv(MujocoEnv, utils.EzPickle):
                 rewards = int(observation["achieved_goal"] >= observation["desired_goal"]) - 1
             elif self.task == "speed":
                 rewards = (
-                    int(np.linalg.norm(observation["achieved_goal"] - observation["desired_goal"]) <= self.goal_dist_th)
-                    - 1
+                        int(np.linalg.norm(
+                            observation["achieved_goal"] - observation["desired_goal"]) <= self.goal_dist_th)
+                        - 1
                 )
             ctrl_cost = 0
 
@@ -326,36 +327,8 @@ class HopperEnv(MujocoEnv, utils.EzPickle):
 
 
 register(
-    id="MyMujoco/Hopper-Keep12-v4-Sparse",
-    entry_point="RLEnvs.MyMujoco.hopper_v4:HopperEnv",
-    max_episode_steps=200,
-    kwargs={"reward_type": "sparse", "task": "height", "goal_dist_th": 0.05, "tgt_height": 1.2},
-)
-
-register(
-    id="MyMujoco/Hopper-Keep13-v4-Sparse",
-    entry_point="RLEnvs.MyMujoco.hopper_v4:HopperEnv",
-    max_episode_steps=200,
-    kwargs={"reward_type": "sparse", "task": "height", "goal_dist_th": 0.05, "tgt_height": 1.3},
-)
-
-register(
-    id="MyMujoco/Hopper-Keep14-v4-Sparse",
+    id="MyMujoco/Hopper-Keep-Sparse",
     entry_point="RLEnvs.MyMujoco.hopper_v4:HopperEnv",
     max_episode_steps=200,
     kwargs={"reward_type": "sparse", "task": "height", "goal_dist_th": 0.05, "tgt_height": 1.4},
-)
-
-register(
-    id="MyMujoco/Hopper-Keep15-v4-Sparse",
-    entry_point="RLEnvs.MyMujoco.hopper_v4:HopperEnv",
-    max_episode_steps=200,
-    kwargs={"reward_type": "sparse", "task": "height", "goal_dist_th": 0.05, "tgt_height": 1.5},
-)
-
-register(
-    id="MyMujoco/Hopper-Keep145-v4-Sparse",
-    entry_point="RLEnvs.MyMujoco.hopper_v4:HopperEnv",
-    max_episode_steps=200,
-    kwargs={"reward_type": "sparse", "task": "height", "goal_dist_th": 0.05, "tgt_height": 1.45},
 )

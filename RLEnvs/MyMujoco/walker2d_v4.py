@@ -325,36 +325,8 @@ class Walker2dEnv(MujocoEnv, utils.EzPickle):
 
 
 register(
-    id="MyMujoco/Walker2d-Keep12-v4-Sparse",
-    entry_point="RLEnvs.MyMujoco.walker2d_v4:Walker2dEnv",
-    max_episode_steps=200,
-    kwargs={"reward_type": "sparse", "task": "height", "goal_dist_th": 0.05, "tgt_height": 1.2},
-)
-
-register(
-    id="MyMujoco/Walker2d-Keep13-v4-Sparse",
+    id="MyMujoco/Walker2d-Keep-Sparse",
     entry_point="RLEnvs.MyMujoco.walker2d_v4:Walker2dEnv",
     max_episode_steps=200,
     kwargs={"reward_type": "sparse", "task": "height", "goal_dist_th": 0.05, "tgt_height": 1.3},
-)
-
-register(
-    id="MyMujoco/Walker2d-Keep14-v4-Sparse",
-    entry_point="RLEnvs.MyMujoco.walker2d_v4:Walker2dEnv",
-    max_episode_steps=200,
-    kwargs={"reward_type": "sparse", "task": "height", "goal_dist_th": 0.05, "tgt_height": 1.4},
-)
-
-register(
-    id="MyMujoco/Walker2d-Keep15-v4-Sparse",
-    entry_point="RLEnvs.MyMujoco.walker2d_v4:Walker2dEnv",
-    max_episode_steps=200,
-    kwargs={"reward_type": "sparse", "task": "height", "goal_dist_th": 0.05, "tgt_height": 1.5},
-)
-
-register(
-    id="MyMujoco/Walker2d-Keep145-v4-Sparse",
-    entry_point="RLEnvs.MyMujoco.walker2d_v4:Walker2dEnv",
-    max_episode_steps=200,
-    kwargs={"reward_type": "sparse", "task": "height", "goal_dist_th": 0.05, "tgt_height": 1.45},
 )

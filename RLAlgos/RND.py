@@ -1,18 +1,13 @@
 """
-The Proximal Policy Optimization (PPO) algorithm.
+The Random Network Distillation (RND) algorithm.
 
 * Both discrete and continuous action spaces are supported.
 
 references:
-- cleanrl: https://docs.cleanrl.dev/rl-algorithms/ppo/
-- cleanrl codes (ppo classic control): https://github.com/vwxyzjn/cleanrl/blob/master/cleanrl/ppo.py
-- cleanrl codes (ppo atari): https://github.com/vwxyzjn/cleanrl/blob/master/cleanrl/ppo_atari.py
-- cleanrl codes (ppo continuous): https://github.com/vwxyzjn/cleanrl/blob/master/cleanrl/ppo_continuous_action.py
+- cleanrl: https://docs.cleanrl.dev/rl-algorithms/ppo-rnd/
+- cleanrl codes: https://github.com/vwxyzjn/cleanrl/blob/master/cleanrl/ppo_rnd_envpool.py
 - original papers:
-    * https://arxiv.org/abs/1707.06347
-    * https://arxiv.org/abs/2005.12729
-    * https://arxiv.org/abs/1707.02286
-    * (RPO): https://arxiv.org/abs/2212.07536
+    * https://arxiv.org/abs/1810.12894
 
 ! Note: the code is completed with the help of copilot.
 """
@@ -27,10 +22,7 @@ import torch.nn.functional as F
 
 from torch.utils.tensorboard import SummaryWriter
 
-from stable_baselines3.common.buffers import ReplayBuffer
 from stable_baselines3.common.running_mean_std import RunningMeanStd
-
-from Networks.CombinedActorCriticNetworks import RNDModel, PPORNDAgent
 
 import os
 import random
@@ -57,48 +49,21 @@ class RewardForwardFilter:
         return self.rewems
 
 
-class PPO_RND:
+class RND:
     """
-    The Proximal Policy Optimization (PPO) algorithm.
+    The Random Network Distillation (RND) algorithm.
     """
 
-    def __init__(
-            self,
-            envs,
-            agent_class,
-            exp_name="ppo",
-            seed=1,
-            cuda=0,
-            gamma=0.99,
-            # PND args------
-            int_gamma=0.99,
-            gae_lambda=0.95,
-            int_coef=1.0,
-            ext_coef=2.0,
-            update_proportion=0.25,
-            num_iterations_obs_norm_init=50,
-            # --------------
-            rollout_length=128,
-            lr=2.5e-4,
-            eps=1e-5,
-            anneal_lr=True,
-            num_mini_batches=4,
-            update_epochs=4,
-            norm_adv=True,
-            clip_value_loss=True,
-            clip_coef=0.2,
-            entropy_coef=0.01,
-            value_coef=0.5,
-            max_grad_norm=0.5,
-            target_kl=None,
-            rpo_alpha=None,
-            write_frequency=100,
-            save_folder="./ppo/",
-    ):
+    def __init__(self, envs, agent_class, rn_class, exp_name="rnd", seed=1, cuda=0, gamma=0.99, int_gamma=0.99,
+                 gae_lambda=0.95, int_coef=1.0, ext_coef=2.0, update_proportion=0.25, num_iterations_obs_norm_init=50,
+                 rollout_length=128, lr=2.5e-4, eps=1e-5, anneal_lr=True, num_mini_batches=4, update_epochs=4,
+                 norm_adv=True, clip_value_loss=True, clip_coef=0.2, entropy_coef=0.01, value_coef=0.5,
+                 max_grad_norm=0.5, target_kl=None, write_frequency=100, save_folder="./rnd/", ):
         """
-        The initialization of the PPO class.
+        The initialization of the RND class.
         :param envs: the VECTOR of gymnasium-based environment.
-        :param agent_class: the class of the agent.
+        :param agent_class: the agent class.
+        :param rn_class: the random network class.
         :param exp_name: the name of the experiment.
         :param seed: the random seed.
         :param cuda: the cuda device.
@@ -107,6 +72,8 @@ class PPO_RND:
         :param gae_lambda: the lambda coefficient in generalized advantage estimation.
         :param int_coef: the coefficient for intrinsic reward.
         :param ext_coef: the coefficient for extrinsic reward.
+        :param update_proportion: the proportion of samples used to update the predictor.
+        :param num_iterations_obs_norm_init: the number of iterations to initialize the observation normalization.
         :param rollout_length: the rollout length.
         :param lr: the learning rate.
         :param eps: the epsilon value.
@@ -120,7 +87,6 @@ class PPO_RND:
         :param value_coef: the value coefficient.
         :param max_grad_norm: the maximum gradient norm.
         :param target_kl: the target kl divergence.
-        :param rpo_alpha: the alpha parameter in RPO.
         :param write_frequency: the frequency of writing logs.
         :param save_folder: the folder to save the model.
         """
@@ -142,18 +108,10 @@ class PPO_RND:
         self.envs = envs
         self.num_envs = self.envs.num_envs
 
-        # if rpo_alpha is None:
-        #     # using normal PPO agent
-        #     self.agent = agent_class(self.envs).to(self.device)
-        # else:
-        #     # using RPO agent
-        #     self.agent = agent_class(self.envs, rpo_alpha, cuda=cuda).to(self.device)
-
-        self.agent = PPORNDAgent(self.envs).to(self.device)
+        self.agent = agent_class(self.envs).to(self.device)
 
         self.anneal_lr = anneal_lr
         self.lr = lr
-        # self.optimizer = optim.Adam(self.agent.parameters(), lr=lr, eps=eps)
 
         # XXX: RND
         self.int_gamma = int_gamma
@@ -162,7 +120,7 @@ class PPO_RND:
         self.update_proportion = update_proportion
         self.num_iterations_obs_norm_init = num_iterations_obs_norm_init
 
-        self.rnd_model = RNDModel(self.envs).to(self.device)
+        self.rnd_model = rn_class(self.envs).to(self.device)
         self.combined_parameters = list(self.agent.parameters()) + list(self.rnd_model.predictor.parameters())
         self.optimizer = optim.Adam(self.combined_parameters, lr=lr, eps=eps)
         self.reward_rms = RunningMeanStd()
@@ -251,8 +209,6 @@ class PPO_RND:
 
                 # action logic
                 with torch.no_grad():
-                    # action, log_prob, _, value = self.agent.get_action_value(next_obs)
-                    # self.values[step] = value.flatten()
 
                     value_ext, value_int = self.agent.get_value(self.obs[step])
                     self.ext_values[step], self.int_values[step] = (
@@ -272,22 +228,10 @@ class PPO_RND:
                 next_obs = torch.Tensor(next_obs).to(self.device)
                 next_done = torch.Tensor(done).to(self.device)
 
-                # XXX RND
-                # rnd_next_obs = (
-                #     (
-                #         (
-                #             next_obs[:, 3, :, :].reshape(self.num_envs, 1, 84, 84)
-                #             - torch.from_numpy(self.obs_rms.mean).to(self.device)
-                #         )
-                #         / torch.sqrt(torch.from_numpy(self.obs_rms.var).to(self.device))
-                #     ).clip(-5, 5)
-                # ).float()
                 rnd_next_obs = (
-                    (
-                            (next_obs - torch.from_numpy(self.obs_rms.mean).to(self.device))
-                            / torch.sqrt(torch.from_numpy(self.obs_rms.var).to(self.device))
-                    )
-                    .clip(-5, 5)  # TODO: check whether need to clip
+                    ((next_obs - torch.from_numpy(self.obs_rms.mean).to(self.device)) / torch.sqrt(
+                        torch.from_numpy(self.obs_rms.var).to(self.device)))
+                    .clip(-5, 5)
                     .float()
                 )
                 target_next_feature = self.rnd_model.target(rnd_next_obs)
@@ -303,10 +247,8 @@ class PPO_RND:
 
             # XXX RND
             curiosity_reward_per_env = np.array(
-                [
-                    self.discounted_reward.update(reward_per_step)
-                    for reward_per_step in self.curiosity_rewards.cpu().data.numpy().T
-                ]
+                [self.discounted_reward.update(reward_per_step) for reward_per_step in
+                 self.curiosity_rewards.cpu().data.numpy().T]
             )
             mean, std, count = (
                 np.mean(curiosity_reward_per_env),
@@ -324,12 +266,6 @@ class PPO_RND:
     def optimize(self, global_step, next_obs, next_done):
         # bootstrap value
         with torch.no_grad():
-            # compute the next value for the last step
-            # next_value = self.agent.get_value(next_obs).reshape(-1, 1)
-            # advantages = torch.zeros((self.rollout_length, self.num_envs)).to(self.device)
-            # last_gae_lam = 0
-
-            # XXX RND
             next_value_ext, next_value_int = self.agent.get_value(next_obs)
             next_value_ext, next_value_int = next_value_ext.reshape(1, -1), next_value_int.reshape(1, -1)
             ext_advantages = torch.zeros_like(self.rewards, device=self.device)
@@ -355,12 +291,6 @@ class PPO_RND:
                     ext_nextvalues = self.ext_values[t + 1]
                     int_nextvalues = self.int_values[t + 1]
 
-                # compute the TD residual: the advantage
-                # delta = self.rewards[t] + self.gamma * next_values.view(-1) * next_non_terminal - self.values[t]
-
-                # advantages[t] = last_gae_lam = delta + self.gamma * self.gae_lambda * next_non_terminal * last_gae_lam
-
-                # XXX RND
                 ext_delta = self.rewards[t] + self.gamma * ext_nextvalues * ext_nextnonterminal - self.ext_values[t]
                 int_delta = (
                         self.curiosity_rewards[t]
@@ -399,17 +329,9 @@ class PPO_RND:
         b_indices = np.arange(self.big_batch_size)
         clip_fracs = []
 
-        # rnd_next_obs = (
-        #     (
-        #         (b_obs[:, 3, :, :].reshape(-1, 1, 84, 84) - torch.from_numpy(self.obs_rms.mean).to(self.device))
-        #         / torch.sqrt(torch.from_numpy(self.obs_rms.var).to(self.device))
-        #     ).clip(-5, 5)
-        # ).float()
         rnd_next_obs = (
-            (
-                    (b_obs - torch.from_numpy(self.obs_rms.mean).to(self.device))
-                    / torch.sqrt(torch.from_numpy(self.obs_rms.var).to(self.device))
-            )
+            ((b_obs - torch.from_numpy(self.obs_rms.mean).to(self.device)) / torch.sqrt(
+                torch.from_numpy(self.obs_rms.var).to(self.device)))
             .clip(-5, 5)
             .float()
         )
@@ -458,13 +380,6 @@ class PPO_RND:
 
                 # clip the value loss if needed
                 if self.clip_value_loss:
-                    # v_loss_unclipped = (new_values - b_returns[mb_indices]) ** 2
-                    # v_clipped = b_values[mb_indices] + torch.clamp(
-                    #     new_values - b_values[mb_indices], -self.clip_coef, self.clip_coef
-                    # )
-                    # v_loss_clipped = (v_clipped - b_returns[mb_indices]) ** 2
-                    # v_loss_max = torch.max(v_loss_unclipped, v_loss_clipped)
-                    # v_loss = 0.5 * v_loss_max.mean()
 
                     ext_v_loss_unclipped = (new_ext_values - b_ext_returns[mb_indices]) ** 2
                     ext_v_clipped = b_ext_values[mb_indices] + torch.clamp(
