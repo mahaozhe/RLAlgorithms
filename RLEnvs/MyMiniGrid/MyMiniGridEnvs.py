@@ -69,6 +69,12 @@ register(
     kwargs={"width": 13, "height": 13, "walls_list": env_four_room, "max_steps": 1000},
 )
 
+# + For the large empty room environment:
+register(
+    id='MiniGrid-Large-Empty-Room',
+    entry_point='RLEnvs.MyMiniGrid.MyMiniGridEnvs:MyNormalRoomsEnv',
+    kwargs={"width": 22, "height": 22, "walls_list": [], "max_steps": 1000},
+)
 
 # + re-write the Key and Door logics to avoid "pick up" and "toggle"
 class MyKey(Key):
