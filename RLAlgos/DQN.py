@@ -139,7 +139,7 @@ class DQN:
             if random.random() < epsilon:
                 action = self.env.action_space.sample()
             else:
-                q_value = self.q_network(torch.Tensor(obs).to(self.device))
+                q_value = self.q_network(torch.Tensor(np.expand_dims(obs, axis=0)).to(self.device))
                 action = torch.argmax(q_value, dim=1).cpu().numpy()
 
             next_obs, reward, terminated, truncated, info = self.env.step(action)
@@ -162,7 +162,6 @@ class DQN:
                 if global_step % self.train_frequency == 0:
                     self.optimize(global_step)
 
-        self.save(indicator="final")
         self.env.close()
         self.writer.close()
 
