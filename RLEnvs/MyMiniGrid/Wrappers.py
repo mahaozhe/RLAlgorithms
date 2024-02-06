@@ -6,6 +6,8 @@ import gymnasium as gym
 
 from gymnasium.core import ObservationWrapper
 
+import numpy as np
+
 
 class AgentLocation(gym.core.Wrapper):
     """
@@ -212,3 +214,23 @@ class NormalRevChannelWrapper(ObservationWrapper):
         reversed_grid = obs["image"].transpose(2, 0, 1)
 
         return {**obs, "image": reversed_grid}
+
+
+class FloatObservationWrapper(ObservationWrapper):
+    """
+    The wrapper to change the date type of the observation space to float32.
+    """
+
+    def __init__(self, env):
+        super(FloatObservationWrapper, self).__init__(env)
+
+        obs_space = env.observation_space.spaces["image"]
+        low = obs_space.low
+        high = obs_space.high
+
+        new_float_obs_space = gym.spaces.Box(low=low, high=high, dtype=np.float32)
+
+        self.observation_space = gym.spaces.Dict({**self.observation_space.spaces, "image": new_float_obs_space})
+
+    def observation(self, obs):
+        return {**obs, "image": obs["image"].astype("float32")}

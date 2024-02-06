@@ -35,6 +35,48 @@ class QNetClassicControl(nn.Module):
         return self.network(x)
 
 
+class QNetMiniGrid(nn.Module):
+    """
+    The Q network for the minigrid environment.
+    The observation space is usually a matrix.
+    The action space is a discrete vector.
+
+    The structure is referred to the MiniGrid Documentation.
+    """
+
+    def __init__(self, env):
+        super().__init__()
+        # Assume observation_space is a gym Space with shape (channels, height, width)
+        n_input_channels = env.observation_space.shape[0]
+
+        self.cnn = nn.Sequential(
+            nn.Conv2d(n_input_channels, 16, (2, 2)),
+            nn.ReLU(),
+            nn.Conv2d(16, 32, (2, 2)),
+            nn.ReLU(),
+            nn.Conv2d(32, 64, (2, 2)),
+            nn.ReLU(),
+            nn.Flatten(),
+        )
+
+        # Compute the flat features size by doing a forward pass through cnn with a dummy input
+        with torch.no_grad():
+            dummy_input = torch.as_tensor(env.observation_space.sample()[None]).float()
+            n_flatten = self.cnn(dummy_input).shape[1]
+
+        self.network = nn.Sequential(
+            nn.Linear(n_flatten, 120),
+            nn.ReLU(),
+            nn.Linear(120, 84),
+            nn.ReLU(),
+            nn.Linear(84, env.action_space.n),
+        )
+
+    def forward(self, x):
+        cnn_features = self.cnn(x)
+        return self.network(cnn_features)
+
+
 class QNetAtari(nn.Module):
     """
     The Q network for Atari environments.

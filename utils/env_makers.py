@@ -6,6 +6,13 @@ import gymnasium as gym
 
 import numpy as np
 
+import RLEnvs.MyMiniGrid.MyMiniGridEnvs
+
+from minigrid.wrappers import *
+
+from RLEnvs.MyMiniGrid.Wrappers import AgentLocation, MovetoFourDirectionsWrapper, NormalRevChannelWrapper, \
+    FloatObservationWrapper
+
 
 def classic_control_env_maker(env_id, seed=1, render=False):
     """
@@ -21,6 +28,38 @@ def classic_control_env_maker(env_id, seed=1, render=False):
     env.observation_space.seed(seed)
 
     env = gym.wrappers.RecordEpisodeStatistics(env)
+
+    return env
+
+
+def minigrid_env_maker(env_id, seed=1, render=False):
+    """
+    Make the MiniGrid environment.
+    :param env_id: the name of the environment
+    :param seed: the random seed
+    :param render: whether to render the environment
+    :return: the environment
+    """
+    env = gym.make(env_id) if not render else gym.make(env_id, render_mode="human")
+
+    env.action_space.seed(seed)
+    env.observation_space.seed(seed)
+
+    env = gym.wrappers.RecordEpisodeStatistics(env)
+
+    env = FullyObsWrapper(env)  # Fully observable gridworld instead of the agent view
+    env = NormalRevChannelWrapper(env)  # change the channel order to [channel, width, height]
+    # change the date type of the observation space to float32
+    env = FloatObservationWrapper(env)
+    env = ImgObsWrapper(env)  # Get rid of the 'mission' field
+
+    # env = RGBImgObsWrapper(env, tile_size=8)  # use fully observable RGB image as observation
+    # env = RGBImgPartialObsWrapper(env, tile_size=8)  # use partially observable RGB image as observation
+    # env = SymbolicObsWrapper(env)  # fully observable grid with symbolic state representations (not RGB image)
+    # env = ViewSizeWrapper(env,agent_view_size=7)    # set the view size of the agent
+
+    env = AgentLocation(env)  # add the agent location to the `info` with the key `agent_loc`
+    env = MovetoFourDirectionsWrapper(env)  # change the action space to make the agent move to four directions directly
 
     return env
 
