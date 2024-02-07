@@ -161,7 +161,6 @@ class PPO:
 
             # + iteration the rollout_length steps, store the collected data
             for step in range(self.rollout_length):
-
                 # for each step in the rollout, the global step increases by the number of environments
                 global_step += self.num_envs
 

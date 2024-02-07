@@ -200,6 +200,51 @@ class PPORNDAgent(nn.Module):
         return self.critic_ext(x), self.critic_int(x)
 
 
+class PPORNDMiniGridAgent(nn.Module):
+    def __init__(self, envs):
+        super().__init__()
+        n_input_channels = envs.single_observation_space.shape[0]
+
+        self.cnn = nn.Sequential(
+            layer_init_std_bias(nn.Conv2d(n_input_channels, 16, (2, 2))),
+            nn.ReLU(),
+            layer_init_std_bias(nn.Conv2d(16, 32, (2, 2))),
+            nn.ReLU(),
+            layer_init_std_bias(nn.Conv2d(32, 64, (2, 2))),
+            nn.ReLU(),
+            nn.Flatten(),
+        )
+
+        # Dummy input to calculate flat features size
+        with torch.no_grad():
+            dummy_input = torch.as_tensor(envs.single_observation_space.sample()[None]).float()
+            n_flatten = self.cnn(dummy_input).shape[1]
+
+        # Actor and Critic networks adapted for Categorical distribution
+        self.actor = layer_init_std_bias(nn.Linear(n_flatten, envs.single_action_space.n), std=0.01)
+        # Two critic networks for extrinsic and intrinsic values
+        self.critic_ext = layer_init_std_bias(nn.Linear(n_flatten, 1), std=1)
+        self.critic_int = layer_init_std_bias(nn.Linear(n_flatten, 1), std=1)
+
+    def get_action_and_value(self, x, action=None):
+        cnn_features = self.cnn(x)
+        logits = self.actor(cnn_features)
+        probs = Categorical(logits=logits)
+        if action is None:
+            action = probs.sample()
+        return (
+            action,
+            probs.log_prob(action),
+            probs.entropy(),
+            self.critic_ext(cnn_features),
+            self.critic_int(cnn_features),
+        )
+
+    def get_value(self, x):
+        cnn_features = self.cnn(x)
+        return self.critic_ext(cnn_features), self.critic_int(cnn_features)
+
+
 class RPOMujocoAgent(nn.Module):
     def __init__(self, envs, rpo_alpha, cuda=0):
         super().__init__()
@@ -240,12 +285,6 @@ class RPOMujocoAgent(nn.Module):
             probs = Normal(action_mean, action_std)
 
         return action, probs.log_prob(action).sum(1), probs.entropy().sum(1), self.critic(x)
-
-
-def layer_init(layer, std=np.sqrt(2), bias_const=0.0):
-    torch.nn.init.orthogonal_(layer.weight, std)
-    torch.nn.init.constant_(layer.bias, bias_const)
-    return layer
 
 
 class RNDModel(nn.Module):
