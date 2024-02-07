@@ -168,6 +168,22 @@ def sync_vector_atari_envs_maker(env_id, num_envs, seed=1):
     return envs
 
 
+def sync_vector_minigrid_envs_maker(env_id, num_envs, seed=1):
+    """
+    Make the synchronized vectorized environments.
+    :param env_id: the name of the environment
+    :param num_envs: the number of environments
+    :param seed: the random seed
+    :return: the vectorized environments
+    """
+
+    envs = gym.vector.SyncVectorEnv(
+        [lambda: minigrid_env_maker(env_id, seed, render=False) for _ in range(num_envs)]
+    )
+
+    return envs
+
+
 def sync_vector_mujoco_envs_maker(env_id, num_envs, gamma, seed=1):
     """
     Make the synchronized vectorized environments.

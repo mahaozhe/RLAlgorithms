@@ -64,7 +64,7 @@ class PPOAtariAgent(nn.Module):
             layer_init_std_bias(nn.Linear(64 * 7 * 7, 512)),
             nn.ReLU(),
         )
-        self.actor = layer_init_std_bias(nn.Linear(512, envs.single_action_space.shape), std=0.01)
+        self.actor = layer_init_std_bias(nn.Linear(512, envs.single_action_space.n), std=0.01)
         self.critic = layer_init_std_bias(nn.Linear(512, 1), std=1)
 
     def get_value(self, x):
@@ -110,6 +110,46 @@ class PPOMujocoAgent(nn.Module):
         if action is None:
             action = probs.sample()
         return action, probs.log_prob(action).sum(1), probs.entropy().sum(1), self.critic(x)
+
+
+class PPOMiniGrid(nn.Module):
+    def __init__(self, envs):
+        super().__init__()
+        n_input_channels = envs.single_observation_space.shape[0]
+
+        self.cnn = nn.Sequential(
+            layer_init_std_bias(nn.Conv2d(n_input_channels, 16, (2, 2))),
+            nn.ReLU(),
+            layer_init_std_bias(nn.Conv2d(16, 32, (2, 2))),
+            nn.ReLU(),
+            layer_init_std_bias(nn.Conv2d(32, 64, (2, 2))),
+            nn.ReLU(),
+            nn.Flatten(),
+        )
+
+        # Dummy input to calculate flat features size
+        with torch.no_grad():
+            dummy_input = torch.as_tensor(envs.single_observation_space.sample()[None]).float()
+            n_flatten = self.cnn(dummy_input).shape[1]
+
+        # Actor and Critic networks
+        self.actor = layer_init_std_bias(nn.Linear(n_flatten, envs.single_action_space.n), std=0.01)
+        self.critic = layer_init_std_bias(nn.Linear(n_flatten, 1), std=1)
+
+    def get_value(self, x):
+        cnn_features = self.cnn(x)
+        return self.critic(cnn_features)
+
+    def get_action_value(self, x, action=None):
+        cnn_features = self.cnn(x)
+        logits = self.actor(cnn_features)
+        probs = Categorical(logits=logits)
+        if action is None:
+            action = probs.sample()
+        action_log_probs = probs.log_prob(action)
+        entropy = probs.entropy()
+        value = self.critic(cnn_features)
+        return action, action_log_probs, entropy, value
 
 
 class PPORNDAgent(nn.Module):
