@@ -94,6 +94,49 @@ class SACActorAtari(nn.Module):
         return action, log_prob, action_probs
 
 
+class SACActorMiniGrid(nn.Module):
+    def __init__(self, env):
+        super().__init__()
+        n_input_channels = env.observation_space.shape[0]
+
+        self.cnn = nn.Sequential(
+            layer_init_bias(nn.Conv2d(n_input_channels, 16, (2, 2))),
+            nn.ReLU(),
+            layer_init_bias(nn.Conv2d(16, 32, (2, 2))),
+            nn.ReLU(),
+            layer_init_bias(nn.Conv2d(32, 64, (2, 2))),
+            nn.ReLU(),
+            nn.Flatten(),
+        )
+
+        # Compute the flat features size by doing a forward pass through cnn with a dummy input
+        with torch.no_grad():
+            dummy_input = torch.as_tensor(env.observation_space.sample()[None]).float()
+            n_flatten = self.cnn(dummy_input).shape[1]
+
+        self.network = nn.Sequential(
+            layer_init_bias(nn.Linear(n_flatten, 120)),
+            nn.ReLU(),
+            layer_init_bias(nn.Linear(120, 84)),
+            nn.ReLU(),
+            layer_init_bias(nn.Linear(84, env.action_space.n)),
+        )
+
+    def forward(self, x):
+        cnn_features = self.cnn(x)
+        logits = self.network(cnn_features)
+        return logits
+
+    def get_action(self, x):
+        logits = self.forward(x)
+        policy_dist = Categorical(logits=logits)
+        action = policy_dist.sample()
+        # Action probabilities for calculating the adapted soft-Q loss
+        action_probs = policy_dist.probs
+        log_prob = F.log_softmax(logits, dim=1)
+        return action, log_prob, action_probs
+
+
 class DeterministicActorContinuousControl(nn.Module):
     def __init__(self, env):
         super().__init__()

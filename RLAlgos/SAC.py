@@ -35,29 +35,10 @@ class SAC:
     The Soft Actor-Critic (SAC) algorithm.
     """
 
-    def __init__(
-            self,
-            env,
-            actor_class,
-            critic_class,
-            exp_name="sac",
-            seed=1,
-            cuda=0,
-            gamma=0.99,
-            buffer_size=1000000,
-            rb_optimize_memory=False,
-            batch_size=256,
-            policy_lr=3e-4,
-            q_lr=1e-3,
-            alpha_lr=1e-4,
-            target_network_frequency=1,
-            tau=0.005,
-            policy_frequency=2,
-            alpha=0.2,
-            alpha_autotune=True,
-            write_frequency=100,
-            save_folder="./sac/",
-    ):
+    def __init__(self, env, actor_class, critic_class, exp_name="sac", seed=1, cuda=0, gamma=0.99, buffer_size=1000000,
+                 rb_optimize_memory=False, batch_size=256, policy_lr=3e-4, q_lr=1e-3, alpha_lr=1e-4,
+                 target_network_frequency=1, tau=0.005, policy_frequency=2, alpha=0.2, alpha_autotune=True,
+                 write_frequency=100, save_folder="./sac/"):
         """
         Initialize the SAC algorithm.
         :param env: the gymnasium-based environment
@@ -310,33 +291,12 @@ class SAC_Atari(SAC):
     The SAC algorithm for Atari games.
     """
 
-    def __init__(
-            self,
-            env,
-            actor_class,
-            critic_class,
-            exp_name="sac-atari",
-            seed=1,
-            cuda=0,
-            gamma=0.99,
-            buffer_size=1000000,
-            rb_optimize_memory=False,
-            batch_size=256,
-            policy_lr=3e-4,
-            q_lr=3e-4,
-            eps=1e-4,
-            alpha_lr=1e-4,
-            target_network_frequency=8000,
-            tau=1,
-            policy_frequency=4,
-            alpha=0.2,
-            alpha_autotune=True,
-            target_entropy_scale=0.89,
-            write_frequency=100,
-            save_folder="./sac/",
-    ):
+    def __init__(self, env, actor_class, critic_class, exp_name="sac-atari", seed=1, cuda=0, gamma=0.99,
+                 buffer_size=1000000, rb_optimize_memory=False, batch_size=256, policy_lr=3e-4, q_lr=3e-4, eps=1e-4,
+                 alpha_lr=1e-4, target_network_frequency=8000, tau=1, policy_frequency=4, alpha=0.2,
+                 alpha_autotune=True, target_entropy_scale=0.89, write_frequency=100, save_folder="./sac-atari/"):
         """
-        Initialize the SAC algorithm.
+        Initialize the SAC algorithm for the Atari envs.
         :param env: the gymnasium-based environment
         :param actor_class: the actor class
         :param critic_class: the critic class
@@ -360,28 +320,10 @@ class SAC_Atari(SAC):
         :param write_frequency: the write frequency
         :param save_folder: the folder to save the model
         """
-        super(SAC_Atari, self).__init__(
-            env,
-            actor_class,
-            critic_class,
-            exp_name,
-            seed,
-            cuda,
-            gamma,
-            buffer_size,
-            rb_optimize_memory,
-            batch_size,
-            policy_lr,
-            q_lr,
-            alpha_lr,
-            target_network_frequency,
-            tau,
-            policy_frequency,
-            alpha,
-            alpha_autotune,
-            write_frequency,
-            save_folder,
-        )
+        super(SAC_Atari, self).__init__(env, actor_class, critic_class, exp_name, seed, cuda, gamma, buffer_size,
+                                        rb_optimize_memory, batch_size, policy_lr, q_lr, alpha_lr,
+                                        target_network_frequency, tau, policy_frequency, alpha, alpha_autotune,
+                                        write_frequency, save_folder)
 
         self.q_optimizer = optim.Adam(list(self.qf_1.parameters()) + list(self.qf_2.parameters()), lr=q_lr, eps=eps)
         self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=policy_lr, eps=eps)
