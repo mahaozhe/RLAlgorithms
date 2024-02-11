@@ -245,7 +245,7 @@ class NoisyNetDQN(DQN):
         for global_step in range(total_timesteps):
             # there is no need for epsilon-greedy exploration in NoisyNet
             q_value = self.q_network(torch.Tensor(np.expand_dims(obs, axis=0)).to(self.device))
-            action = torch.argmax(q_value, dim=1).cpu().numpy()
+            action = torch.argmax(q_value, dim=1).cpu().numpy()[0]
 
             next_obs, reward, terminated, truncated, info = self.env.step(action)
             done = terminated or truncated

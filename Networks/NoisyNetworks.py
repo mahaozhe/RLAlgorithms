@@ -50,8 +50,8 @@ class NoisyLinear(nn.Module):
 
     def forward(self, x):
         if self.training:
-            weight = self.weight_mu + self.weight_sigma.mul_(self.weight_epsilon)
-            bias = self.bias_mu + self.bias_sigma.mul_(self.bias_epsilon)
+            weight = self.weight_mu + self.weight_sigma * self.weight_epsilon
+            bias = self.bias_mu + self.bias_sigma * self.bias_epsilon
         else:
             weight = self.weight_mu
             bias = self.bias_mu
