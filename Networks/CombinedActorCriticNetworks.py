@@ -152,7 +152,7 @@ class PPOMiniGrid(nn.Module):
         return action, action_log_probs, entropy, value
 
 
-class PPORNDAgent(nn.Module):
+class RNDAgent(nn.Module):
     """agent network"""
 
     def __init__(self, envs):
