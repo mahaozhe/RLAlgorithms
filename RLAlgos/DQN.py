@@ -203,3 +203,74 @@ class DQN:
                                                                         datetime.datetime.fromtimestamp(
                                                                             time.time()).strftime(
                                                                             '%Y-%m-%d-%H-%M-%S'))))
+
+
+class NoisyNetDQN(DQN):
+    """
+    The NoisyNet DQN algorithm.
+    """
+
+    def __init__(self, env, noisy_q_network_class, exp_name="noisy-net-dqn", seed=1, cuda=0, learning_rate=2.5e-4,
+                 buffer_size=10000, rb_optimize_memory=False, gamma=0.99, tau=1., target_network_frequency=500,
+                 batch_size=128, train_frequency=10, write_frequency=100, save_folder="./noisy-net-dqn/"):
+        """
+        Initialize the NoisyNet DQN algorithm.
+        :param env: the gym-based environment
+        :param noisy_q_network_class: the noisy network class
+        :param exp_name: the experiment name
+        :param seed: the random seed
+        :param cuda: whether to use cuda
+        :param learning_rate: the learning rate
+        :param buffer_size: the replay memory buffer size
+        :param rb_optimize_memory: whether to optimize the memory usage of the replay buffer
+        :param gamma: the discount factor gamma
+        :param tau: the target network update rate
+        :param target_network_frequency: the timesteps it takes to update the target network
+        :param batch_size: the batch size of sample from the reply memory
+        :param train_frequency: the frequency of training
+        :param write_frequency: the frequency of writing to tensorboard
+        :param save_folder: the folder to save the model
+        """
+
+        super(NoisyNetDQN, self).__init__(env=env, q_network_class=noisy_q_network_class, exp_name=exp_name, seed=seed,
+                                          cuda=cuda, learning_rate=learning_rate, buffer_size=buffer_size,
+                                          rb_optimize_memory=rb_optimize_memory, gamma=gamma, tau=tau,
+                                          target_network_frequency=target_network_frequency, batch_size=batch_size,
+                                          train_frequency=train_frequency, write_frequency=write_frequency,
+                                          save_folder=save_folder)
+
+    def learn(self, total_timesteps=500000, learning_starts=10000):
+        # start the game
+        obs, _ = self.env.reset(seed=self.seed)
+        for global_step in range(total_timesteps):
+            # there is no need for epsilon-greedy exploration in NoisyNet
+            q_value = self.q_network(torch.Tensor(np.expand_dims(obs, axis=0)).to(self.device))
+            action = torch.argmax(q_value, dim=1).cpu().numpy()
+
+            next_obs, reward, terminated, truncated, info = self.env.step(action)
+            done = terminated or truncated
+
+            if "episode" in info:
+                print(f"global_step={global_step}, episodic_return={info['episode']['r']}")
+                self.writer.add_scalar("charts/episodic_return", info["episode"]["r"], global_step)
+                self.writer.add_scalar("charts/episodic_length", info["episode"]["l"], global_step)
+
+            self.replay_buffer.add(obs, next_obs, action, reward, done, info)
+
+            if not done:
+                obs = next_obs
+            else:
+                obs, _ = self.env.reset()
+
+            if global_step > learning_starts:
+                if global_step % self.train_frequency == 0:
+                    self.optimize_noisy_net(global_step)
+
+        self.env.close()
+        self.writer.close()
+
+    def optimize_noisy_net(self, global_step):
+        # reset the noise
+        self.q_network.reset_noise()
+
+        self.optimize(global_step)
