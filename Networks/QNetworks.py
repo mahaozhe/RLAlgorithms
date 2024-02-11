@@ -65,11 +65,9 @@ class QNetMiniGrid(nn.Module):
             n_flatten = self.cnn(dummy_input).shape[1]
 
         self.network = nn.Sequential(
-            nn.Linear(n_flatten, 120),
+            nn.Linear(n_flatten, 128),
             nn.ReLU(),
-            nn.Linear(120, 84),
-            nn.ReLU(),
-            nn.Linear(84, env.action_space.n),
+            nn.Linear(128, env.action_space.n),
         )
 
     def forward(self, x):
@@ -158,11 +156,9 @@ class SACSoftQNetworkMiniGrid(nn.Module):
             n_flatten = self.cnn(dummy_input).shape[1]
 
         self.network = nn.Sequential(
-            layer_init_bias(nn.Linear(n_flatten, 120)),
+            layer_init_bias(nn.Linear(n_flatten, 128)),
             nn.ReLU(),
-            layer_init_bias(nn.Linear(120, 84)),
-            nn.ReLU(),
-            layer_init_bias(nn.Linear(84, env.action_space.n)),
+            layer_init_bias(nn.Linear(128, env.action_space.n)),
         )
 
     def forward(self, x):

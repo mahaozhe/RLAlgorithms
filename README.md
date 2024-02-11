@@ -29,7 +29,7 @@ All RL environments packages can be found in [RLEnvs](./RLEnvs/) package.
 - [x] [SAC](./RLAlgos/SAC.py)
 - [x] [PPO](./RLAlgos/PPO.py)
 - [x] [RPO](./RLAlgos/PPO.py)
-- [ ] RND
+- [x] [RND](./RLAlgos/RND.py)
 - [ ] QDagger
 
 ### Setup
@@ -50,6 +50,10 @@ All RL environments packages can be found in [RLEnvs](./RLEnvs/) package.
     * [PPO in robotics control (e.g., gymnasium-robotics, MyFetchRobot)](./run-scripts/ppo-robotics.py)
 - RPO algorithm (can only work on continuous action spaces):
     * [RPO in continuous control](./run-scripts/rpo.py)
+- RND algorithm:
+    * [RND in classic control](./run-scripts/rnd-continuous.py)
+    * [RND in robotics control (e.g., gymnasium-robotics, MyFetchRobot)](./run-scripts/rnd-robotics.py)
+    * [RND in MiniGrid environments](./run-scripts/rnd-minigrid.py)
 - DDPG algorithm (can only work on continuous action spaces):
     * [DDPG in continuous control](./run-scripts/ddpg.py)
 - TD3 algorithm (can only work on continuous action spaces):

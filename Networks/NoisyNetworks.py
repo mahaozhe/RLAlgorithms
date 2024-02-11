@@ -112,11 +112,9 @@ class NoisyQNetMiniGrid(nn.Module):
             n_flatten = self.cnn(dummy_input).shape[1]
 
         self.network = nn.Sequential(
-            NoisyLinear(n_flatten, 120),
+            NoisyLinear(n_flatten, 128),
             nn.ReLU(),
-            NoisyLinear(120, 84),
-            nn.ReLU(),
-            NoisyLinear(84, env.action_space.n),
+            NoisyLinear(128, env.action_space.n),
         )
 
     def forward(self, x):
