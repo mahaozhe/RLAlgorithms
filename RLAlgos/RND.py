@@ -30,12 +30,6 @@ import datetime
 import time
 
 
-def layer_init(layer, std=np.sqrt(2), bias_const=0.0):
-    torch.nn.init.orthogonal_(layer.weight, std)
-    torch.nn.init.constant_(layer.bias, bias_const)
-    return layer
-
-
 class RewardForwardFilter:
     def __init__(self, gamma):
         self.rewems = None
@@ -108,27 +102,29 @@ class RND:
         self.envs = envs
         self.num_envs = self.envs.num_envs
 
-        self.agent = agent_class(self.envs).to(self.device)
-
-        self.anneal_lr = anneal_lr
-        self.lr = lr
-
-        # XXX: RND
+        # * new in RND
         self.int_gamma = int_gamma
         self.int_coef = int_coef
         self.ext_coef = ext_coef
         self.update_proportion = update_proportion
         self.num_iterations_obs_norm_init = num_iterations_obs_norm_init
 
+        # * the policy agent
+        self.agent = agent_class(self.envs).to(self.device)
+
+        # * the RND models
         self.rnd_model = rn_class(self.envs).to(self.device)
         self.combined_parameters = list(self.agent.parameters()) + list(self.rnd_model.predictor.parameters())
         self.optimizer = optim.Adam(self.combined_parameters, lr=lr, eps=eps)
         self.reward_rms = RunningMeanStd()
-        self.obs_rms = RunningMeanStd(shape=(self.envs.single_observation_space.shape[0]))
+        self.obs_rms = RunningMeanStd(shape=(self.envs.single_observation_space.shape))
         self.discounted_reward = RewardForwardFilter(self.int_gamma)
 
-        self.rollout_length = rollout_length
+        self.anneal_lr = anneal_lr
+        self.lr = lr
 
+        # * from the PPO algorithm
+        self.rollout_length = rollout_length
         # the big_batch_size is the total timesteps collected in one update: rollout_length * num_envs
         self.big_batch_size = self.rollout_length * self.num_envs
         self.num_mini_batches = num_mini_batches
@@ -137,20 +133,18 @@ class RND:
 
         # * set up the storage
         self.obs = torch.zeros((self.rollout_length, self.num_envs) + envs.single_observation_space.shape).to(
-            self.device
-        )
+            self.device)
         self.actions = torch.zeros((self.rollout_length, self.num_envs) + envs.single_action_space.shape).to(
-            self.device
-        )
+            self.device)
         self.log_probs = torch.zeros((self.rollout_length, self.num_envs)).to(self.device)
         self.rewards = torch.zeros((self.rollout_length, self.num_envs)).to(self.device)
         self.done = torch.zeros((self.rollout_length, self.num_envs)).to(self.device)
         self.values = torch.zeros((self.rollout_length, self.num_envs)).to(self.device)
+
+        # * new for RND
         self.curiosity_rewards = torch.zeros((self.rollout_length, self.num_envs)).to(self.device)
-        # XXX RND
         self.ext_values = torch.zeros((self.rollout_length, self.num_envs)).to(self.device)
         self.int_values = torch.zeros((self.rollout_length, self.num_envs)).to(self.device)
-        # self.avg_returns = deque(maxlen=20)
 
         self.gamma = gamma
         self.gae_lambda = gae_lambda
@@ -209,12 +203,8 @@ class RND:
 
                 # action logic
                 with torch.no_grad():
-
                     value_ext, value_int = self.agent.get_value(self.obs[step])
-                    self.ext_values[step], self.int_values[step] = (
-                        value_ext.flatten(),
-                        value_int.flatten(),
-                    )
+                    self.ext_values[step], self.int_values[step] = (value_ext.flatten(), value_int.flatten())
                     action, log_prob, _, _, _ = self.agent.get_action_and_value(self.obs[step])
 
                 self.actions[step] = action
@@ -228,12 +218,10 @@ class RND:
                 next_obs = torch.Tensor(next_obs).to(self.device)
                 next_done = torch.Tensor(done).to(self.device)
 
-                rnd_next_obs = (
-                    ((next_obs - torch.from_numpy(self.obs_rms.mean).to(self.device)) / torch.sqrt(
-                        torch.from_numpy(self.obs_rms.var).to(self.device)))
-                    .clip(-5, 5)
-                    .float()
-                )
+                # * removed the .clip(-5, 5) from the original code
+                rnd_next_obs = (((next_obs - torch.from_numpy(self.obs_rms.mean).to(self.device)) / torch.sqrt(
+                    torch.from_numpy(self.obs_rms.var).to(self.device))).float())
+
                 target_next_feature = self.rnd_model.target(rnd_next_obs)
                 predict_next_feature = self.rnd_model.predictor(rnd_next_obs)
                 self.curiosity_rewards[step] = ((target_next_feature - predict_next_feature).pow(2).sum(1) / 2).data
@@ -245,16 +233,12 @@ class RND:
                     print(f"global_step={global_step}, episodic_return={episodic_return}")
                     self.writer.add_scalar("charts/episodic_return", episodic_return, global_step)
 
-            # XXX RND
-            curiosity_reward_per_env = np.array(
-                [self.discounted_reward.update(reward_per_step) for reward_per_step in
-                 self.curiosity_rewards.cpu().data.numpy().T]
-            )
+            # * new for RND
+            curiosity_reward_per_env = np.array([self.discounted_reward.update(reward_per_step) for reward_per_step in
+                                                 self.curiosity_rewards.cpu().data.numpy().T])
             mean, std, count = (
-                np.mean(curiosity_reward_per_env),
-                np.std(curiosity_reward_per_env),
-                len(curiosity_reward_per_env),
-            )
+                np.mean(curiosity_reward_per_env), np.std(curiosity_reward_per_env), len(curiosity_reward_per_env),)
+
             self.reward_rms.update_from_moments(mean, std ** 2, count)
             self.curiosity_rewards /= np.sqrt(self.reward_rms.var)
 
@@ -276,33 +260,24 @@ class RND:
             for t in reversed(range(self.rollout_length)):
                 # if it is the last step, then the next non-terminal value is the bootstrap value
                 if t == self.rollout_length - 1:
-                    # next_non_terminal = 1.0 - next_done
-                    # next_values = next_value
                     ext_nextnonterminal = 1.0 - next_done
                     int_nextnonterminal = 1.0
                     ext_nextvalues = next_value_ext
                     int_nextvalues = next_value_int
                 # if it is not the last step, then the next non-terminal value is the value of the next step
                 else:
-                    # next_non_terminal = 1.0 - self.done[t + 1]
-                    # next_values = self.values[t + 1]
                     ext_nextnonterminal = 1.0 - self.done[t + 1]
                     int_nextnonterminal = 1.0
                     ext_nextvalues = self.ext_values[t + 1]
                     int_nextvalues = self.int_values[t + 1]
 
                 ext_delta = self.rewards[t] + self.gamma * ext_nextvalues * ext_nextnonterminal - self.ext_values[t]
-                int_delta = (
-                        self.curiosity_rewards[t]
-                        + self.int_gamma * int_nextvalues * int_nextnonterminal
-                        - self.int_values[t]
-                )
+                int_delta = (self.curiosity_rewards[t] + self.int_gamma * int_nextvalues * int_nextnonterminal -
+                             self.int_values[t])
                 ext_advantages[t] = ext_lastgaelam = (
-                        ext_delta + self.gamma * self.gae_lambda * ext_nextnonterminal * ext_lastgaelam
-                )
+                        ext_delta + self.gamma * self.gae_lambda * ext_nextnonterminal * ext_lastgaelam)
                 int_advantages[t] = int_lastgaelam = (
-                        int_delta + self.int_gamma * self.gae_lambda * int_nextnonterminal * int_lastgaelam
-                )
+                        int_delta + self.int_gamma * self.gae_lambda * int_nextnonterminal * int_lastgaelam)
 
             # returns = advantages + self.values
             ext_returns = ext_advantages + self.ext_values
@@ -312,9 +287,7 @@ class RND:
         b_obs = self.obs.reshape((-1,) + self.envs.single_observation_space.shape)
         b_log_probs = self.log_probs.reshape(-1)
         b_actions = self.actions.reshape((-1,) + self.envs.single_action_space.shape)
-        # b_advantages = advantages.reshape(-1)
-        # b_returns = returns.reshape(-1)
-        # b_values = self.values.reshape(-1)
+
         b_ext_advantages = ext_advantages.reshape(-1)
         b_int_advantages = int_advantages.reshape(-1)
         b_ext_returns = ext_returns.reshape(-1)
@@ -329,12 +302,9 @@ class RND:
         b_indices = np.arange(self.big_batch_size)
         clip_fracs = []
 
-        rnd_next_obs = (
-            ((b_obs - torch.from_numpy(self.obs_rms.mean).to(self.device)) / torch.sqrt(
-                torch.from_numpy(self.obs_rms.var).to(self.device)))
-            .clip(-5, 5)
-            .float()
-        )
+        rnd_next_obs = (((b_obs - torch.from_numpy(self.obs_rms.mean).to(self.device)) / torch.sqrt(
+            torch.from_numpy(self.obs_rms.var).to(self.device))).float())
+        # .clip(-5, 5)
 
         # run multiple epochs to optimize the policy network
         for epoch in range(self.update_epochs):
@@ -345,17 +315,14 @@ class RND:
                 mb_indices = b_indices[start:end]
 
                 predict_next_state_feature, target_next_state_feature = self.rnd_model(rnd_next_obs[mb_indices])
-                forward_loss = F.mse_loss(
-                    predict_next_state_feature, target_next_state_feature.detach(), reduction="none"
-                ).mean(-1)
+                forward_loss = F.mse_loss(predict_next_state_feature, target_next_state_feature.detach(),
+                                          reduction="none").mean(-1)
                 mask = torch.rand(len(forward_loss), device=self.device)
                 mask = (mask < self.update_proportion).type(torch.FloatTensor).to(self.device)
-                forward_loss = (forward_loss * mask).sum() / torch.max(
-                    mask.sum(), torch.tensor([1], device=self.device, dtype=torch.float32)
-                )
+                forward_loss = (forward_loss * mask).sum() / torch.max(mask.sum(), torch.tensor([1], device=self.device,
+                                                                                                dtype=torch.float32))
                 _, new_log_probs, entropy, new_ext_values, new_int_values = self.agent.get_action_and_value(
-                    b_obs[mb_indices], b_actions[mb_indices]
-                )
+                    b_obs[mb_indices], b_actions[mb_indices])
                 log_ratio = new_log_probs - b_log_probs[mb_indices]
                 ratio = log_ratio.exp()
 
@@ -380,13 +347,9 @@ class RND:
 
                 # clip the value loss if needed
                 if self.clip_value_loss:
-
                     ext_v_loss_unclipped = (new_ext_values - b_ext_returns[mb_indices]) ** 2
-                    ext_v_clipped = b_ext_values[mb_indices] + torch.clamp(
-                        new_ext_values - b_ext_values[mb_indices],
-                        -self.clip_coef,
-                        self.clip_coef,
-                    )
+                    ext_v_clipped = b_ext_values[mb_indices] + torch.clamp(new_ext_values - b_ext_values[mb_indices],
+                                                                           -self.clip_coef, self.clip_coef)
                     ext_v_loss_clipped = (ext_v_clipped - b_ext_returns[mb_indices]) ** 2
                     ext_v_loss_max = torch.max(ext_v_loss_unclipped, ext_v_loss_clipped)
                     ext_v_loss = 0.5 * ext_v_loss_max.mean()
@@ -407,7 +370,6 @@ class RND:
                 # optimize the network
                 self.optimizer.zero_grad()
                 loss.backward()
-                # torch.nn.utils.clip_grad_norm_(self.agent.parameters(), self.max_grad_norm)
                 torch.nn.utils.clip_grad_norm_(self.combined_parameters, self.max_grad_norm)
                 self.optimizer.step()
 
@@ -435,20 +397,13 @@ class RND:
         if indicator.startswith("best") or indicator.startswith("final"):
             torch.save(
                 self.agent.state_dict(),
-                os.path.join(self.save_folder, "actor-{}-{}-{}.pth".format(self.exp_name, indicator, self.seed)),
-            )
+                os.path.join(self.save_folder, "actor-{}-{}-{}.pth".format(self.exp_name, indicator, self.seed)))
 
         else:
             # for normally saved models.
             torch.save(
                 self.agent.state_dict(),
-                os.path.join(
-                    self.save_folder,
-                    "actor-{}-{}-{}-{}.pth".format(
-                        self.exp_name,
-                        indicator,
-                        self.seed,
-                        datetime.datetime.fromtimestamp(time.time()).strftime("%Y-%m-%d-%H-%M-%S"),
-                    ),
-                ),
-            )
+                os.path.join(self.save_folder, "actor-{}-{}-{}-{}.pth".format(self.exp_name, indicator, self.seed,
+                                                                              datetime.datetime.fromtimestamp(
+                                                                                  time.time()).strftime(
+                                                                                  "%Y-%m-%d-%H-%M-%S"))))
