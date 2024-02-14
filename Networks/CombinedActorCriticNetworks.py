@@ -194,8 +194,7 @@ class RPOMujocoAgent(nn.Module):
         return action, probs.log_prob(action).sum(1), probs.entropy().sum(1), self.critic(x)
 
 
-class RNDAgent(nn.Module):
-    """agent network"""
+class RNDMujocoAgent(nn.Module):
 
     def __init__(self, envs):
         super().__init__()
@@ -242,7 +241,7 @@ class RNDAgent(nn.Module):
         return self.critic_ext(x), self.critic_int(x)
 
 
-class RNDModel(nn.Module):
+class RNDMujocoModel(nn.Module):
     def __init__(self, envs):
         super().__init__()
 
@@ -307,13 +306,13 @@ class RNDMiniGridAgent(nn.Module):
         self.critic_ext = nn.Sequential(
             layer_init_std_bias(nn.Linear(n_flatten, 128)),
             nn.Tanh(),
-            layer_init_std_bias(nn.Linear(128, 1), std=1.0),
+            layer_init_std_bias(nn.Linear(128, 1), std=0.01),
         )
 
         self.critic_int = nn.Sequential(
             layer_init_std_bias(nn.Linear(n_flatten, 128)),
             nn.Tanh(),
-            layer_init_std_bias(nn.Linear(128, 1), std=1.0),
+            layer_init_std_bias(nn.Linear(128, 1), std=0.01),
         )
 
     def get_action_and_value(self, x, action=None):
@@ -324,13 +323,8 @@ class RNDMiniGridAgent(nn.Module):
         if action is None:
             action = probs.sample()
 
-        return (
-            action,
-            probs.log_prob(action).sum(),
-            probs.entropy().sum(),
-            self.critic_ext(cnn_features),
-            self.critic_int(cnn_features),
-        )
+        return action, probs.log_prob(action), probs.entropy(), self.critic_ext(cnn_features), self.critic_int(
+            cnn_features)
 
     def get_value(self, x):
         cnn_features = self.cnn(x)
@@ -338,7 +332,7 @@ class RNDMiniGridAgent(nn.Module):
 
 
 class RNDMiniGridModel(nn.Module):
-    def __init__(self, envs):
+    def __init__(self, envs, output_features=256):
         super().__init__()
 
         n_input_channels = envs.single_observation_space.shape[0]
@@ -358,27 +352,28 @@ class RNDMiniGridModel(nn.Module):
             dummy_input = torch.as_tensor(envs.single_observation_space.sample()[None]).float()
             n_flatten = base_cnn(dummy_input).shape[1]
 
+        # * Note: the features from predictor and target networks should be a vector instead of a scalar
         # Predictor network
         self.predictor = nn.Sequential(
             base_cnn,
-            layer_init_std_bias(nn.Linear(n_flatten, 128)),
-            nn.Tanh(),
-            layer_init_std_bias(nn.Linear(128, 1), std=1.0),
+            layer_init_std_bias(nn.Linear(n_flatten, 256)),
+            nn.ReLU(),
+            layer_init_std_bias(nn.Linear(256, 256)),
+            nn.ReLU(),
+            layer_init_std_bias(nn.Linear(256, output_features)),
         )
 
         # Target network
         self.target = nn.Sequential(
             base_cnn,
-            layer_init_std_bias(nn.Linear(n_flatten, 128)),
-            nn.Tanh(),
-            layer_init_std_bias(nn.Linear(128, 1), std=1.0),
+            layer_init_std_bias(nn.Linear(n_flatten, output_features)),
         )
         # Making the target network not trainable
         for param in self.target.parameters():
             param.requires_grad = False
 
-    def forward(self, obs):
-        predict_feature = self.predictor(obs)
-        target_feature = self.target(obs)
+    def forward(self, next_obs):
+        predict_feature = self.predictor(next_obs)
+        target_feature = self.target(next_obs)
 
         return predict_feature, target_feature

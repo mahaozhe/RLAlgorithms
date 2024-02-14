@@ -6,7 +6,7 @@ import argparse
 
 from RLAlgos.RND import RND
 
-from Networks.CombinedActorCriticNetworks import RNDAgent, RNDModel
+from Networks.CombinedActorCriticNetworks import RNDMujocoAgent, RNDMujocoModel
 
 from utils.env_makers import sync_vector_mujoco_envs_maker
 
@@ -56,7 +56,7 @@ def run():
     # ! note the env maker needs the additional argument gamma
     envs = sync_vector_mujoco_envs_maker(env_id=args.env_id, num_envs=args.num_envs, seed=args.seed, gamma=args.gamma)
 
-    agent = RND(envs=envs, agent_class=RNDAgent, rn_class=RNDModel, exp_name=args.exp_name, seed=args.seed,
+    agent = RND(envs=envs, agent_class=RNDMujocoAgent, rn_class=RNDMujocoModel, exp_name=args.exp_name, seed=args.seed,
                 cuda=args.cuda, gamma=args.gamma, gae_lambda=args.gae_lambda, rollout_length=args.rollout_length,
                 lr=args.lr, eps=args.eps, anneal_lr=args.anneal_lr, num_mini_batches=args.num_mini_batches,
                 update_epochs=args.update_epochs, norm_adv=args.norm_adv, clip_value_loss=args.clip_value_loss,
