@@ -28,6 +28,9 @@ def parse_args():
     parser.add_argument("--rb-optimize-memory", type=bool, default=False)
     parser.add_argument("--batch-size", type=int, default=128)
 
+    # + new for NoisyNet
+    parser.add_argument("--noisy-std-init", type=float, default=1)
+
     parser.add_argument("--target-network-frequency", type=int, default=500)
     parser.add_argument("--tau", type=float, default=1.)
 
@@ -52,8 +55,8 @@ def run():
                         cuda=args.cuda, learning_rate=args.learning_rate, buffer_size=args.buffer_size,
                         rb_optimize_memory=args.rb_optimize_memory, gamma=args.gamma, tau=args.tau,
                         target_network_frequency=args.target_network_frequency, batch_size=args.batch_size,
-                        train_frequency=args.train_frequency, write_frequency=args.write_frequency,
-                        save_folder=args.save_folder)
+                        train_frequency=args.train_frequency, noisy_std_init=args.noisy_std_init,
+                        write_frequency=args.write_frequency, save_folder=args.save_folder)
 
     agent.learn(total_timesteps=args.total_timesteps, learning_starts=args.learning_starts)
 
