@@ -167,7 +167,8 @@ class RND:
         self.envs.reset()
         obs_norm_obs = []
         for step in range(self.rollout_length * self.num_iterations_obs_norm_init):
-            obs_norm_acs = np.random.randint(0, self.envs.single_action_space.n, size=(self.num_envs,))
+            # sample random actions, should compile with both Discrete and Box action spaces
+            obs_norm_acs = self.envs.action_space.sample()
             s, _, _, _, _ = self.envs.step(obs_norm_acs)
             obs_norm_obs.append(s)
 

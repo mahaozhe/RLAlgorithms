@@ -12,7 +12,7 @@ from utils.env_makers import sync_vector_robotics_envs_maker
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Run RND on classic control environments.")
+    parser = argparse.ArgumentParser(description="Run RND on robotics environments.")
 
     parser.add_argument("--exp-name", type=str, default="rnd-robotics")
 
@@ -22,7 +22,14 @@ def parse_args():
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--cuda", type=int, default=0)
     parser.add_argument("--gamma", type=float, default=0.99)
+    parser.add_argument("--int-gamma", type=float, default=0.99)
     parser.add_argument("--gae-lambda", type=float, default=0.95)
+
+    # + new for RND
+    parser.add_argument("--int-coef", type=float, default=1.0)
+    parser.add_argument("--ext-coef", type=float, default=2.0)
+    parser.add_argument("--update-proportion", type=float, default=0.25)
+    parser.add_argument("--num-iterations-obs-norm-init", type=int, default=50)
 
     parser.add_argument("--rollout-length", type=int, default=2048)
     parser.add_argument("--num-mini-batches", type=int, default=32)
@@ -57,9 +64,11 @@ def run():
     envs = sync_vector_robotics_envs_maker(env_id=args.env_id, num_envs=args.num_envs, seed=args.seed)
 
     agent = RND(envs=envs, agent_class=RNDMujocoAgent, rn_class=RNDMujocoModel, exp_name=args.exp_name, seed=args.seed,
-                cuda=args.cuda, gamma=args.gamma, gae_lambda=args.gae_lambda, rollout_length=args.rollout_length,
-                lr=args.lr, eps=args.eps, anneal_lr=args.anneal_lr, num_mini_batches=args.num_mini_batches,
-                update_epochs=args.update_epochs, norm_adv=args.norm_adv, clip_value_loss=args.clip_value_loss,
+                cuda=args.cuda, gamma=args.gamma, int_gamma=args.int_gamma, gae_lambda=args.gae_lambda,
+                int_coef=args.int_coef, ext_coef=args.ext_coef, update_proportion=args.update_proportion,
+                num_iterations_obs_norm_init=args.num_iterations_obs_norm_init, rollout_length=args.rollout_length,
+                num_mini_batches=args.num_mini_batches, update_epochs=args.update_epochs, lr=args.lr, eps=args.eps,
+                anneal_lr=args.anneal_lr, norm_adv=args.norm_adv, clip_value_loss=args.clip_value_loss,
                 clip_coef=args.clip_coef, entropy_coef=args.entropy_coef, value_coef=args.value_coef,
                 max_grad_norm=args.max_grad_norm, target_kl=args.target_kl, write_frequency=args.write_frequency,
                 save_folder=args.save_folder)
