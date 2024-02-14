@@ -212,7 +212,8 @@ class NoisyNetDQN(DQN):
 
     def __init__(self, env, noisy_q_network_class, exp_name="noisy-net-dqn", seed=1, cuda=0, learning_rate=2.5e-4,
                  buffer_size=10000, rb_optimize_memory=False, gamma=0.99, tau=1., target_network_frequency=500,
-                 batch_size=128, train_frequency=10, write_frequency=100, save_folder="./noisy-net-dqn/"):
+                 batch_size=128, train_frequency=10, noisy_std_init=0.25, write_frequency=100,
+                 save_folder="./noisy-net-dqn/"):
         """
         Initialize the NoisyNet DQN algorithm.
         :param env: the gym-based environment
@@ -228,6 +229,7 @@ class NoisyNetDQN(DQN):
         :param target_network_frequency: the timesteps it takes to update the target network
         :param batch_size: the batch size of sample from the reply memory
         :param train_frequency: the frequency of training
+        :param noisy_std_init: the initial standard deviation for the noisy network
         :param write_frequency: the frequency of writing to tensorboard
         :param save_folder: the folder to save the model
         """
@@ -238,6 +240,12 @@ class NoisyNetDQN(DQN):
                                           target_network_frequency=target_network_frequency, batch_size=batch_size,
                                           train_frequency=train_frequency, write_frequency=write_frequency,
                                           save_folder=save_folder)
+
+        # the noisy networks
+        self.q_network = noisy_q_network_class(self.env, std_init=noisy_std_init).to(self.device)
+        self.optimizer = optim.Adam(self.q_network.parameters(), lr=learning_rate)
+        self.target_network = noisy_q_network_class(self.env, std_init=noisy_std_init).to(self.device)
+        self.target_network.load_state_dict(self.q_network.state_dict())
 
     def learn(self, total_timesteps=500000, learning_starts=10000):
         # start the game
@@ -264,13 +272,13 @@ class NoisyNetDQN(DQN):
 
             if global_step > learning_starts:
                 if global_step % self.train_frequency == 0:
-                    self.optimize_noisy_net(global_step)
+                    self.optimize(global_step)
 
         self.env.close()
         self.writer.close()
 
-    def optimize_noisy_net(self, global_step):
-        # reset the noise
-        self.q_network.reset_noise()
-
-        self.optimize(global_step)
+    # def optimize_noisy_net(self, global_step):
+    #     # reset the noise
+    #     self.q_network.reset_noise()
+    #
+    #     self.optimize(global_step)
