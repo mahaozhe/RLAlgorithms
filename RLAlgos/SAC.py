@@ -36,7 +36,7 @@ class SAC:
     """
 
     def __init__(self, env, actor_class, critic_class, exp_name="sac", seed=1, cuda=0, gamma=0.99, buffer_size=1000000,
-                 rb_optimize_memory=False, batch_size=256, policy_lr=3e-4, q_lr=1e-3, alpha_lr=1e-4,
+                 rb_optimize_memory=False, batch_size=256, policy_lr=3e-4, q_lr=1e-3, eps=1e-8, alpha_lr=1e-4,
                  target_network_frequency=1, tau=0.005, policy_frequency=2, alpha=0.2, alpha_autotune=True,
                  write_frequency=100, save_folder="./sac/"):
         """
@@ -53,6 +53,7 @@ class SAC:
         :param batch_size: the batch size
         :param policy_lr: the learning rate of the policy network
         :param q_lr: the learning rate of the Q network
+        :param eps: the epsilon for the Adam optimizer
         :param alpha_lr: the learning rate of the temperature parameter
         :param tau: the soft update coefficient
         :param policy_frequency: the policy update frequency
@@ -89,8 +90,8 @@ class SAC:
         self.qf_2_target.load_state_dict(self.qf_2.state_dict())
 
         # initialize the optimizers
-        self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=policy_lr)
-        self.q_optimizer = optim.Adam(list(self.qf_1.parameters()) + list(self.qf_2.parameters()), lr=q_lr)
+        self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=policy_lr, eps=eps)
+        self.q_optimizer = optim.Adam(list(self.qf_1.parameters()) + list(self.qf_2.parameters()), lr=q_lr, eps=eps)
 
         # initialize the temperature parameter
         self.alpha_autotune = alpha_autotune
@@ -234,56 +235,31 @@ class SAC:
 
     def save(self, indicator="best"):
         if indicator.startswith("best") or indicator.startswith("final"):
-            torch.save(
-                self.actor.state_dict(),
-                os.path.join(self.save_folder, "actor-{}-{}-{}.pth".format(self.exp_name, indicator, self.seed)),
-            )
-            torch.save(
-                self.qf_1.state_dict(),
-                os.path.join(self.save_folder, "qf_1-{}-{}-{}.pth".format(self.exp_name, indicator, self.seed)),
-            )
-            torch.save(
-                self.qf_2.state_dict(),
-                os.path.join(self.save_folder, "qf_2-{}-{}-{}.pth".format(self.exp_name, indicator, self.seed)),
-            )
+            torch.save(self.actor.state_dict(),
+                       os.path.join(self.save_folder, "actor-{}-{}-{}.pth".format(self.exp_name, indicator, self.seed)))
+            torch.save(self.qf_1.state_dict(),
+                       os.path.join(self.save_folder, "qf_1-{}-{}-{}.pth".format(self.exp_name, indicator, self.seed)))
+            torch.save(self.qf_2.state_dict(),
+                       os.path.join(self.save_folder, "qf_2-{}-{}-{}.pth".format(self.exp_name, indicator, self.seed)))
         else:
-            # for normally saved models.
-            torch.save(
-                self.actor.state_dict(),
-                os.path.join(
-                    self.save_folder,
-                    "actor-{}-{}-{}-{}.pth".format(
-                        self.exp_name,
-                        indicator,
-                        self.seed,
-                        datetime.datetime.fromtimestamp(time.time()).strftime("%Y-%m-%d-%H-%M-%S"),
-                    ),
-                ),
-            )
-            torch.save(
-                self.qf_1.state_dict(),
-                os.path.join(
-                    self.save_folder,
-                    "qf_1-{}-{}-{}-{}.pth".format(
-                        self.exp_name,
-                        indicator,
-                        self.seed,
-                        datetime.datetime.fromtimestamp(time.time()).strftime("%Y-%m-%d-%H-%M-%S"),
-                    ),
-                ),
-            )
-            torch.save(
-                self.qf_2.state_dict(),
-                os.path.join(
-                    self.save_folder,
-                    "qf_2-{}-{}-{}-{}.pth".format(
-                        self.exp_name,
-                        indicator,
-                        self.seed,
-                        datetime.datetime.fromtimestamp(time.time()).strftime("%Y-%m-%d-%H-%M-%S"),
-                    ),
-                ),
-            )
+            torch.save(self.actor.state_dict(), os.path.join(self.save_folder,
+                                                             "actor-{}-{}-{}-{}.pth".format(self.exp_name, indicator,
+                                                                                            self.seed,
+                                                                                            datetime.datetime.fromtimestamp(
+                                                                                                time.time()).strftime(
+                                                                                                "%Y-%m-%d-%H-%M-%S"))))
+            torch.save(self.qf_1.state_dict(), os.path.join(self.save_folder,
+                                                            "qf_1-{}-{}-{}-{}.pth".format(self.exp_name, indicator,
+                                                                                          self.seed,
+                                                                                          datetime.datetime.fromtimestamp(
+                                                                                              time.time()).strftime(
+                                                                                              "%Y-%m-%d-%H-%M-%S"))))
+            torch.save(self.qf_2.state_dict(), os.path.join(self.save_folder,
+                                                            "qf_2-{}-{}-{}-{}.pth".format(self.exp_name, indicator,
+                                                                                          self.seed,
+                                                                                          datetime.datetime.fromtimestamp(
+                                                                                              time.time()).strftime(
+                                                                                              "%Y-%m-%d-%H-%M-%S"))))
 
 
 class SAC_Atari(SAC):
@@ -321,16 +297,18 @@ class SAC_Atari(SAC):
         :param save_folder: the folder to save the model
         """
         super(SAC_Atari, self).__init__(env, actor_class, critic_class, exp_name, seed, cuda, gamma, buffer_size,
-                                        rb_optimize_memory, batch_size, policy_lr, q_lr, alpha_lr,
+                                        rb_optimize_memory, batch_size, policy_lr, q_lr, eps, alpha_lr,
                                         target_network_frequency, tau, policy_frequency, alpha, alpha_autotune,
                                         write_frequency, save_folder)
 
-        self.q_optimizer = optim.Adam(list(self.qf_1.parameters()) + list(self.qf_2.parameters()), lr=q_lr, eps=eps)
-        self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=policy_lr, eps=eps)
-
+        # + modify the alpha auto-tuning initialization
         if alpha_autotune:
             self.target_entropy = -target_entropy_scale * torch.log(1 / torch.tensor(self.env.action_space.n))
+            self.log_alpha = torch.zeros(1, requires_grad=True, device=self.device)
+            self.alpha = self.log_alpha.exp().item()
             self.alpha_optimizer = optim.Adam([self.log_alpha], lr=alpha_lr, eps=eps)
+        else:
+            self.alpha = alpha
 
     def optimize(self, global_step):
         if global_step % self.policy_frequency == 0:
@@ -342,10 +320,9 @@ class SAC_Atari(SAC):
                 qf_2_next_target = self.qf_2_target(data.next_observations)
                 # we can use the action probabilities instead of MC sampling to estimate the expectation
                 min_qf_next_target = next_state_action_probs * (
-                        torch.min(qf_1_next_target, qf_2_next_target) - self.alpha * next_state_log_pi
-                )
+                        torch.min(qf_1_next_target, qf_2_next_target) - self.alpha * next_state_log_pi)
                 min_qf_next_target = min_qf_next_target.sum(dim=1)
-                next_q_value = data.rewards.flatten() + (1 - data.dones.flatten()) * self.gamma * (min_qf_next_target)
+                next_q_value = data.rewards.flatten() + (1 - data.dones.flatten()) * self.gamma * min_qf_next_target
 
             qf_1_values = self.qf_1(data.observations)
             qf_2_values = self.qf_2(data.observations)
@@ -374,9 +351,8 @@ class SAC_Atari(SAC):
 
             if self.alpha_autotune:
                 # re-use action probabilities for temperature loss
-                alpha_loss = (
-                        action_probs.detach() * (-self.log_alpha.exp() * (log_pi + self.target_entropy).detach())
-                ).mean()
+                alpha_loss = (action_probs.detach() * (
+                        -self.log_alpha.exp() * (log_pi + self.target_entropy).detach())).mean()
 
                 self.alpha_optimizer.zero_grad()
                 alpha_loss.backward()
