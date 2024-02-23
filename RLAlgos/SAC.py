@@ -144,9 +144,7 @@ class SAC:
             if global_step < learning_starts:
                 action = self.env.action_space.sample()
             else:
-                # add one dimension to the observation
                 action, _, _ = self.actor.get_action(torch.Tensor(np.expand_dims(obs, axis=0)).to(self.device))
-                # action, _, _ = self.actor.get_action(torch.Tensor(obs).to(self.device))
                 action = action.detach().cpu().numpy()[0]
 
             next_obs, reward, terminated, truncated, info = self.env.step(action)
@@ -179,9 +177,8 @@ class SAC:
             qf_1_next_target = self.qf_1_target(data.next_observations, next_state_actions)
             qf_2_next_target = self.qf_2_target(data.next_observations, next_state_actions)
             min_qf_next_target = torch.min(qf_1_next_target, qf_2_next_target) - self.alpha * next_state_log_pi
-            next_q_value = data.rewards.flatten() + (1 - data.dones.flatten()) * self.gamma * (min_qf_next_target).view(
-                -1
-            )
+            next_q_value = data.rewards.flatten() + (1 - data.dones.flatten()) * self.gamma * min_qf_next_target.view(
+                -1)
 
         qf_1_a_values = self.qf_1(data.observations, data.actions).view(-1)
         qf_2_a_values = self.qf_2(data.observations, data.actions).view(-1)
@@ -234,32 +231,12 @@ class SAC:
                 self.writer.add_scalar("losses/alpha_loss", alpha_loss.item(), global_step)
 
     def save(self, indicator="best"):
-        if indicator.startswith("best") or indicator.startswith("final"):
-            torch.save(self.actor.state_dict(),
-                       os.path.join(self.save_folder, "actor-{}-{}-{}.pth".format(self.exp_name, indicator, self.seed)))
-            torch.save(self.qf_1.state_dict(),
-                       os.path.join(self.save_folder, "qf_1-{}-{}-{}.pth".format(self.exp_name, indicator, self.seed)))
-            torch.save(self.qf_2.state_dict(),
-                       os.path.join(self.save_folder, "qf_2-{}-{}-{}.pth".format(self.exp_name, indicator, self.seed)))
-        else:
-            torch.save(self.actor.state_dict(), os.path.join(self.save_folder,
-                                                             "actor-{}-{}-{}-{}.pth".format(self.exp_name, indicator,
-                                                                                            self.seed,
-                                                                                            datetime.datetime.fromtimestamp(
-                                                                                                time.time()).strftime(
-                                                                                                "%Y-%m-%d-%H-%M-%S"))))
-            torch.save(self.qf_1.state_dict(), os.path.join(self.save_folder,
-                                                            "qf_1-{}-{}-{}-{}.pth".format(self.exp_name, indicator,
-                                                                                          self.seed,
-                                                                                          datetime.datetime.fromtimestamp(
-                                                                                              time.time()).strftime(
-                                                                                              "%Y-%m-%d-%H-%M-%S"))))
-            torch.save(self.qf_2.state_dict(), os.path.join(self.save_folder,
-                                                            "qf_2-{}-{}-{}-{}.pth".format(self.exp_name, indicator,
-                                                                                          self.seed,
-                                                                                          datetime.datetime.fromtimestamp(
-                                                                                              time.time()).strftime(
-                                                                                              "%Y-%m-%d-%H-%M-%S"))))
+        torch.save(self.actor.state_dict(),
+                   os.path.join(self.save_folder, "actor-{}-{}-{}.pth".format(self.exp_name, indicator, self.seed)))
+        torch.save(self.qf_1.state_dict(),
+                   os.path.join(self.save_folder, "qf_1-{}-{}-{}.pth".format(self.exp_name, indicator, self.seed)))
+        torch.save(self.qf_2.state_dict(),
+                   os.path.join(self.save_folder, "qf_2-{}-{}-{}.pth".format(self.exp_name, indicator, self.seed)))
 
 
 class SAC_Atari(SAC):
