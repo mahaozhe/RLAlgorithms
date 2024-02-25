@@ -29,7 +29,7 @@ def parse_args():
     parser.add_argument("--batch-size", type=int, default=128)
 
     # + new for NoisyNet
-    parser.add_argument("--noisy-std-init", type=float, default=1)
+    parser.add_argument("--noisy-std-init", type=float, default=10)
 
     parser.add_argument("--target-network-frequency", type=int, default=500)
     parser.add_argument("--tau", type=float, default=1.)

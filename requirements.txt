@@ -1,0 +1,6 @@
+gymnasium
+numpy
+tensorboard
+torch
+tqdm
+stable_baselines3
