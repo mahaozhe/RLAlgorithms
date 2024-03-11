@@ -76,6 +76,19 @@ register(
     kwargs={"width": 22, "height": 22, "walls_list": [], "max_steps": 1000},
 )
 
+# + For the large four-room environment:
+env_four_room_large = [(9, 1), (9, 2), (9, 3), (9, 4), (9, 6), (9, 7), (9, 8), (9, 9), (9, 10), (9, 11), (9, 12),
+                       (9, 13), (9, 15), (9, 16), (9, 17),
+                       (1, 9), (2, 9), (3, 9), (4, 9), (6, 9), (7, 9), (8, 9), (10, 9), (11, 9), (12, 9), (13, 9),
+                       (15, 9), (16, 9), (17, 9)]
+
+register(
+    id='MiniGrid-Env-Four-Room-19x19',
+    entry_point='RLEnvs.MyMiniGrid.MyMiniGridEnvs:MyNormalRoomsEnv',
+    kwargs={"width": 19, "height": 19, "walls_list": env_four_room_large, "max_steps": 1000},
+)
+
+
 # + re-write the Key and Door logics to avoid "pick up" and "toggle"
 class MyKey(Key):
     def __init__(self, color="yellow"):
