@@ -59,3 +59,27 @@ class QNetworkContinuousControlNew(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
+
+
+class CategoricalQNetwork(nn.Module):
+    def __init__(self, env, n_atoms=51, v_min=-10, v_max=10):
+        super().__init__()
+        self.n_atoms = n_atoms
+        self.n = env.action_space.n
+        self.register_buffer("atoms", torch.linspace(v_min, v_max, steps=n_atoms))
+        self.network = nn.Sequential(
+            nn.Linear(np.array(env.observation_space.shape).prod(), 120),
+            nn.ReLU(),
+            nn.Linear(120, 84),
+            nn.ReLU(),
+            nn.Linear(84, self.n * n_atoms)
+        )
+
+    def get_action(self, x, action=None):
+        logits = self.network(x)
+        # probability mass function
+        pmfs = torch.softmax(logits.view(len(x), self.n, self.n_atoms), dim=2)
+        q_values = (self.atoms * pmfs).sum(2)
+        if action is None:
+            action = torch.argmax(q_values, 1)
+        return action, pmfs[torch.arange(len(x)), action]

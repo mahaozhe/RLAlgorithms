@@ -29,21 +29,21 @@ The project implements RL algorithms in separate independent classes, easy to re
 The implementation of these algorithms is primarily based on the [CleanRL library](https://github.com/vwxyzjn/cleanrl),
 which is also an excellent resource that we recommend for reference.
 
-|             Algorithm              | Description                                              | Auther & Year                                                               | Discrete Control | Continuous Control | 
-|:----------------------------------:|:---------------------------------------------------------|:----------------------------------------------------------------------------|:----------------:|:------------------:|
-|      [DQN](./RLAlgos/DQN.py)       | An enhanced version of Deep Q-Networks algorithm.        | [Mnih et al., 2015](https://www.nature.com/articles/nature14236)            |        ✔️        |         ❌          |
-| [NoisyNet (DQN)](./RLAlgos/DQN.py) | An extension of DQN with noisy networks for exploration. | [Fortunato et al., 2019](https://openreview.net/forum?id=rywHCPkAW)         |        ✔️        |         ❌          |
-|      [PPO](./RLAlgos/PPO.py)       | Proximal Policy Optimization.                            | [Schulman et al., 2017](https://arxiv.org/abs/1707.06347)                   |        ✔️        |       ✔️   ️       |
-|      [RPO](./RLAlgos/PPO.py)       | An improved version of PPO.                              | [Md Masudur Rahman and Yexiang Xue, 2023](https://arxiv.org/abs/2212.07536) |        ✔️        |         ✔️         |
-|      [RND](./RLAlgos/RND.py)       | Random Network Distillation, extended from PPO.          | [Burda et al., 2018](https://openreview.net/forum?id=H1lJJnR5Ym)            |        ✔️        |         ✔️         |
-|     [DDPG](./RLAlgos/DDPG.py)      | Deep Deterministic Policy Gradient algorithm.            | [Silver et al., 2014](https://arxiv.org/abs/1509.02971)                     |        ❌         |         ✔️         |
-|      [TD3](./RLAlgos/TD3.py)       | Twin Delayed DDPG, an improved version of DDPG.          | [Fujimoto et al., 2018](https://proceedings.mlr.press/v80/fujimoto18a)      |        ❌         |         ✔️         |
-|      [SAC](./RLAlgos/SAC.py)       | Soft Actor-Critic.                                       | [Haarnoja et al., 2018](https://proceedings.mlr.press/v80/haarnoja18b)      |        ✔️        |         ✔️         |
+|                   Algorithm                   | Description                                                     | Auther & Year                                                               | Discrete Control | Continuous Control | 
+|:---------------------------------------------:|:----------------------------------------------------------------|:----------------------------------------------------------------------------|:----------------:|:------------------:|
+|            [DQN](./RLAlgos/DQN.py)            | An enhanced version of Deep Q-Networks algorithm.               | [Mnih et al., 2015](https://www.nature.com/articles/nature14236)            |        ✔️        |         ❌          |
+| [CategoricalDQN](./RLAlgos/CategoricalDQN.py) | An extension of DQN with categorical distributional Q-learning. | [Bellemare et al., 2017](https://arxiv.org/abs/1707.06887)                  |        ✔️        |         ❌          |
+|      [NoisyNet (DQN)](./RLAlgos/DQN.py)       | An extension of DQN with noisy networks for exploration.        | [Fortunato et al., 2019](https://openreview.net/forum?id=rywHCPkAW)         |        ✔️        |         ❌          |
+|            [PPO](./RLAlgos/PPO.py)            | Proximal Policy Optimization.                                   | [Schulman et al., 2017](https://arxiv.org/abs/1707.06347)                   |        ✔️        |       ✔️   ️       |
+|            [RPO](./RLAlgos/PPO.py)            | An improved version of PPO.                                     | [Md Masudur Rahman and Yexiang Xue, 2023](https://arxiv.org/abs/2212.07536) |        ✔️        |         ✔️         |
+|            [RND](./RLAlgos/RND.py)            | Random Network Distillation, extended from PPO.                 | [Burda et al., 2018](https://openreview.net/forum?id=H1lJJnR5Ym)            |        ✔️        |         ✔️         |
+|           [DDPG](./RLAlgos/DDPG.py)           | Deep Deterministic Policy Gradient algorithm.                   | [Silver et al., 2014](https://arxiv.org/abs/1509.02971)                     |        ❌         |         ✔️         |
+|            [TD3](./RLAlgos/TD3.py)            | Twin Delayed DDPG, an improved version of DDPG.                 | [Fujimoto et al., 2018](https://proceedings.mlr.press/v80/fujimoto18a)      |        ❌         |         ✔️         |
+|            [SAC](./RLAlgos/SAC.py)            | Soft Actor-Critic.                                              | [Haarnoja et al., 2018](https://proceedings.mlr.press/v80/haarnoja18b)      |        ✔️        |         ✔️         |
 
 ### Algorithms to be Implemented
 
 - [ ] Soft Q-Learning (SQL)
-- [ ] Categorical DQN (C51)
 - [ ] Advantage Actor-Critic (A2C)
 - [ ] Asynchronous Advantage Actor-Critic (A3C)
 - [ ] and more...
