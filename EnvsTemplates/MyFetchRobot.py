@@ -1,6 +1,6 @@
 import gymnasium as gym
 
-import RLEnvs.MyFetchRobot.reach
+from RLEnvs.MyFetchRobot import push, reach, slide, rotate
 
 env_name = "MyFetchRobot/Reach-Jnt-Sparse-v0"
 
