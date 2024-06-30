@@ -157,6 +157,8 @@ class AutoPickUpKeyOpenDoor(gym.core.Wrapper):
                 door_obj.is_locked = False
                 door_obj.is_open = True
 
+        return obs, reward, terminated, truncated, info
+
 
 class RGBImgObsRevChannelWrapper(ObservationWrapper):
     """
