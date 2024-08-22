@@ -72,12 +72,12 @@ def atari_games_env_maker(env_id, seed=1, render=False):
     env.action_space.seed(seed)
     env.observation_space.seed(seed)
 
+    # to automatically record the episodic return
+    env = gym.wrappers.RecordEpisodeStatistics(env)
+
     # some wrappers for the atari environment
     env = gym.wrappers.AtariPreprocessing(env, frame_skip=1)
     env = gym.wrappers.FrameStack(env, 4)
-
-    # to automatically record the episodic return
-    env = gym.wrappers.RecordEpisodeStatistics(env)
 
     return env
 

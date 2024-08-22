@@ -71,6 +71,7 @@ them [here](./run-scripts).
     * [RND in continuous control](./run-scripts/rnd-continuous.py)
     * [RND in robotics control (e.g., gymnasium-robotics, MyFetchRobot)](./run-scripts/rnd-robotics.py)
     * [RND in MiniGrid environments](./run-scripts/rnd-minigrid.py)
+    * [RND in Atari environments](./run-scripts/rnd-atari.py)
 - DDPG algorithm (can only work on continuous action spaces):
     * [DDPG in continuous control](./run-scripts/ddpg.py)
 - TD3 algorithm (can only work on continuous action spaces):
@@ -96,6 +97,8 @@ can be found in [RLEnvs folder](./RLEnvs/).
   library, customized the reward function to only give **sparse and delayed** rewards for four FetchRobot tasks.
 - [MyMujoco](./RLEnvs/MyMujoco): based on the [gymnasium-mujoco](https://gymnasium.farama.org/environments/mujoco/)
   library, customized the reward function to only give **sparse and delayed** rewards.
+- [MyMiniWorld](./RLEnvs/MyMiniWorld): based on the [MiniWorld](https://miniworld.farama.org/) environment, customized
+  some self-designed and sparse-reward environments.
 
 ### Templates
 
